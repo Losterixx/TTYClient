@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "id": "ttyclient",
+  "version": "${version}",
+  "name": "TTYClient",
+  "description": "A terminal-themed Minecraft client for those who live in the shell.",
+  "authors": [ "Losterixx" ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/ttyclient/textures/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.losterixx.ttyclient.client.MainClient"
+      }
+    ],
+    "main": [
+      {
+        "adapter": "kotlin",
+        "value": "dev.losterixx.ttyclient.Main"
+      }
+    ]
+  },
+  "mixins": [
+    {
+      "config": "ttyclient.mixins.json"
+    }
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-language-kotlin": ">=${kotlin_loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}

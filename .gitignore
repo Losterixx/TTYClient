@@ -1,0 +1,11 @@
+# build files
+build/
+
+# testing
+run/
+!run/options.txt
+
+# IntelliJ
+.kotlin/
+.idea/
+.gradle/

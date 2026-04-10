@@ -1,0 +1,31 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "dev.losterixx.ttyclient.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "mixins": [
+  ],
+  "client": [
+    "general.ChatInputSuggestorMixin",
+    "general.ClientBrandRetrieverMixin",
+    "general.MinecraftClientMixin",
+    "general.ScreenClickCommandMixin",
+    "accessors.OptionInstanceAccessor",
+    "general.TitleScreenMixin",
+    "modules.combined.MouseHandlerMixin",
+    "modules.freelook.FreelookCameraMixin",
+    "modules.zoom.ZoomCameraMixin",
+    "modules.customchat.ChatComponentMixin",
+    "modules.autoreconnect.DisconnectedScreenMixin",
+    "modules.autoreconnect.JoinMultiplayerScreenMixin",
+    "modules.renderutils.HeldItemRendererMixin",
+    "modules.renderutils.FireOverlayMixin",
+    "modules.screenshots.ScreenshotMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "requireAnnotations": true
+  }
+}
