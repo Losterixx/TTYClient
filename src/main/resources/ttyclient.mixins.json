@@ -6,6 +6,7 @@
   "mixins": [
   ],
   "client": [
+    "general.LoadingOverlayMixin",
     "general.ChatInputSuggestorMixin",
     "general.ClientBrandRetrieverMixin",
     "general.MinecraftClientMixin",
