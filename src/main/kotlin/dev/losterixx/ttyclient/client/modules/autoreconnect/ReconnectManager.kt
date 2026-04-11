@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.modules.autoreconnect
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.AutoReconnectConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.components.Button
@@ -19,6 +20,9 @@ object ReconnectManager : ClientModule {
 
     override val id = "autoreconnect"
     override val configPath = "config/modules/autoreconnect.jsonc"
+    override val displayName = "Auto Reconnect"
+    override val description = "Automatically reconnects to the last server after a disconnect."
+    override val category = ModuleCategory.UTILS
 
     var lastServerData: ServerData? = null
     var currentReconnectButton: Button? = null

@@ -5,10 +5,16 @@ import dev.losterixx.ttyclient.client.commandsys.Command
 import dev.losterixx.ttyclient.client.commandsys.CommandContext
 import dev.losterixx.ttyclient.client.commandsys.CommandManager
 import dev.losterixx.ttyclient.client.config.ConfigManager
+import dev.losterixx.ttyclient.client.manager.ModuleManager
 import dev.losterixx.ttyclient.client.modules.autoreconnect.ReconnectManager
+import dev.losterixx.ttyclient.client.modules.crosshair.CrosshairManager
 import dev.losterixx.ttyclient.client.modules.customchat.ChatManager
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager
 import dev.losterixx.ttyclient.client.modules.fullbright.FullbrightManager
+import dev.losterixx.ttyclient.client.modules.notifications.NotificationManager
+import dev.losterixx.ttyclient.client.modules.renderutils.RenderUtilsManager
+import dev.losterixx.ttyclient.client.modules.screenshots.ScreenshotManager
+import dev.losterixx.ttyclient.client.modules.utils.UtilsManager
 import dev.losterixx.ttyclient.client.modules.zoom.ZoomManager
 
 class ModuleCommand : Command(
@@ -18,7 +24,7 @@ class ModuleCommand : Command(
     usage = ":module <--trigger/--toggle> <module>"
 ) {
     companion object {
-        val MODULES = listOf("freelook", "zoom", "fullbright", "customchat", "autoreconnect")
+        val MODULES: List<String> get() = ModuleManager.getAll().map { it.id }.sorted()
     }
 
     override fun getSupportedFlags(): List<String> = listOf("trigger", "toggle")
@@ -87,63 +93,93 @@ class ModuleCommand : Command(
                     CommandManager.reply("${MainClient.PREFIX}§cCustomChat is disabled. Use §f:module --toggle customchat §cto enable it.")
                     return
                 }
+
                 ChatManager.toggle()
             }
 
-            "autoreconnect" -> {
-                CommandManager.reply("${MainClient.PREFIX}§7AutoReconnect has no trigger action. Use §f:module --toggle autoreconnect §7to enable/disable it.")
-            }
-
-            else -> unknownModule(name)
+            else -> CommandManager.reply(
+                "${MainClient.PREFIX}§7Module §f$name §7has no trigger action.",
+                " §7Use §f:module --toggle $name §7to enable/disable it."
+            )
         }
     }
 
     private fun handleToggle(name: String) {
         when (name) {
             "freelook" -> {
-                val newEnabled = !FreelookManager.config.enabled
-                FreelookManager.config.enabled = newEnabled
-
-                if (!newEnabled && FreelookManager.isActive()) FreelookManager.trigger()
-                ConfigManager.saveConfig("config/modules/freelook.jsonc", FreelookManager.config)
+                val new = !FreelookManager.config.enabled
+                FreelookManager.config.enabled = new
+                ConfigManager.saveConfig(FreelookManager.configPath, FreelookManager.config)
+                ModuleManager.postToggle(FreelookManager, new)
             }
 
             "zoom" -> {
-                val newEnabled = !ZoomManager.config.enabled
-                ZoomManager.config.enabled = newEnabled
-
-                if (!newEnabled && ZoomManager.isActive()) ZoomManager.stopZoom()
-                ConfigManager.saveConfig("config/modules/zoom.jsonc", ZoomManager.config)
+                val new = !ZoomManager.config.enabled
+                ZoomManager.config.enabled = new
+                ConfigManager.saveConfig(ZoomManager.configPath, ZoomManager.config)
+                ModuleManager.postToggle(ZoomManager, new)
             }
 
             "fullbright" -> {
-                val newEnabled = !FullbrightManager.config.enabled
-                FullbrightManager.config.enabled = newEnabled
-
-                if (!newEnabled) FullbrightManager.disable()
-                ConfigManager.saveConfig("config/modules/fullbright.jsonc", FullbrightManager.config)
+                val new = !FullbrightManager.config.enabled
+                FullbrightManager.config.enabled = new
+                ConfigManager.saveConfig(FullbrightManager.configPath, FullbrightManager.config)
+                ModuleManager.postToggle(FullbrightManager, new)
             }
 
             "customchat" -> {
-                val newEnabled = !ChatManager.config.enabled
-                ChatManager.config.enabled = newEnabled
-                ConfigManager.saveConfig("config/modules/customchat.jsonc", ChatManager.config)
+                val new = !ChatManager.config.enabled
+                ChatManager.config.enabled = new
+                ConfigManager.saveConfig(ChatManager.configPath, ChatManager.config)
+                ModuleManager.postToggle(ChatManager, new)
             }
 
             "autoreconnect" -> {
-                val newEnabled = !ReconnectManager.config.enabled
-                ReconnectManager.config.enabled = newEnabled
-                ConfigManager.saveConfig("config/modules/autoreconnect.jsonc", ReconnectManager.config)
+                val new = !ReconnectManager.config.enabled
+                ReconnectManager.config.enabled = new
+                ConfigManager.saveConfig(ReconnectManager.configPath, ReconnectManager.config)
+                ModuleManager.postToggle(ReconnectManager, new)
             }
 
-            else -> unknownModule(name)
-        }
-    }
+            "crosshair" -> {
+                val new = !CrosshairManager.config.enabled
+                CrosshairManager.config.enabled = new
+                ConfigManager.saveConfig(CrosshairManager.configPath, CrosshairManager.config)
+                ModuleManager.postToggle(CrosshairManager, new)
+            }
 
-    private fun unknownModule(name: String) {
-        CommandManager.reply(
-            "${MainClient.PREFIX}§cUnknown module: §f$name",
-            " §7Available: §f${MODULES.joinToString(", ")}"
-        )
+            "renderutils" -> {
+                val new = !RenderUtilsManager.config.enabled
+                RenderUtilsManager.config.enabled = new
+                ConfigManager.saveConfig(RenderUtilsManager.configPath, RenderUtilsManager.config)
+                ModuleManager.postToggle(RenderUtilsManager, new)
+            }
+
+            "utils" -> {
+                val new = !UtilsManager.config.enabled
+                UtilsManager.config.enabled = new
+                ConfigManager.saveConfig(UtilsManager.configPath, UtilsManager.config)
+                ModuleManager.postToggle(UtilsManager, new)
+            }
+
+            "screenshots" -> {
+                val new = !ScreenshotManager.config.enabled
+                ScreenshotManager.config.enabled = new
+                ConfigManager.saveConfig(ScreenshotManager.configPath, ScreenshotManager.config)
+                ModuleManager.postToggle(ScreenshotManager, new)
+            }
+
+            "notifications" -> {
+                val new = !NotificationManager.config.enabled
+                NotificationManager.config.enabled = new
+                ConfigManager.saveConfig(NotificationManager.configPath, NotificationManager.config)
+                ModuleManager.postToggle(NotificationManager, new)
+            }
+
+            else -> CommandManager.reply(
+                "${MainClient.PREFIX}§cUnknown module: §f$name",
+                " §7Available: §f${MODULES.joinToString(", ")}"
+            )
+        }
     }
 }

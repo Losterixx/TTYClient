@@ -5,17 +5,21 @@ import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.manager.HotkeyManager
 import dev.losterixx.ttyclient.client.manager.KeybindManager
 import dev.losterixx.ttyclient.client.manager.ModuleManager
+import dev.losterixx.ttyclient.client.event.ClientTickEvent
+import dev.losterixx.ttyclient.client.event.EventBus
 import dev.losterixx.ttyclient.client.modules.autoreconnect.ReconnectManager
 import dev.losterixx.ttyclient.client.modules.crosshair.CrosshairManager
 import dev.losterixx.ttyclient.client.modules.customchat.ChatManager
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager
 import dev.losterixx.ttyclient.client.modules.fullbright.FullbrightManager
+import dev.losterixx.ttyclient.client.modules.notifications.NotificationManager
 import dev.losterixx.ttyclient.client.modules.renderutils.RenderUtilsManager
 import dev.losterixx.ttyclient.client.modules.screenshots.ScreenshotManager
 import dev.losterixx.ttyclient.client.modules.utils.UtilsManager
 import dev.losterixx.ttyclient.client.modules.zoom.ZoomManager
 import dev.losterixx.ttyclient.client.ui.Theme
 import net.fabricmc.api.ClientModInitializer
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.fabricmc.loader.api.FabricLoader
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
@@ -45,7 +49,8 @@ object MainClient : ClientModInitializer {
             ReconnectManager,
             RenderUtilsManager,
             UtilsManager,
-            ScreenshotManager
+            ScreenshotManager,
+            NotificationManager
         )
 
         // -> Other config watchers
@@ -61,6 +66,11 @@ object MainClient : ClientModInitializer {
         // -> Register event listeners
         HotkeyManager.register()
         ModuleManager.registerAll()
+
+        // -> Drive EventBus ClientTickEvent
+        ClientTickEvents.END_CLIENT_TICK.register { mc ->
+            EventBus.post(ClientTickEvent(mc))
+        }
 
         // -> Keybinds from config
         KeybindManager.load()

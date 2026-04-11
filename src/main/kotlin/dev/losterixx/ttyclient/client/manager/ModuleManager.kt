@@ -1,6 +1,9 @@
 package dev.losterixx.ttyclient.client.manager
 
 import dev.losterixx.ttyclient.client.config.ConfigManager
+import dev.losterixx.ttyclient.client.event.ConfigReloadedEvent
+import dev.losterixx.ttyclient.client.event.EventBus
+import dev.losterixx.ttyclient.client.event.ModuleToggleEvent
 import dev.losterixx.ttyclient.client.modules.ClientModule
 
 object ModuleManager {
@@ -10,7 +13,10 @@ object ModuleManager {
     fun init(vararg mods: ClientModule) {
         modules.addAll(mods)
         mods.forEach { module ->
-            ConfigManager.onReload(module.configPath) { module.load() }
+            ConfigManager.onReload(module.configPath) {
+                module.load()
+                EventBus.post(ConfigReloadedEvent(module.configPath))
+            }
         }
     }
 
@@ -21,5 +27,9 @@ object ModuleManager {
         modules.find { it.id.equals(id, ignoreCase = true) }
 
     fun getAll(): List<ClientModule> = modules.toList()
-}
 
+    fun postToggle(module: ClientModule, enabled: Boolean) {
+        if (enabled) module.onEnable() else module.onDisable()
+        EventBus.post(ModuleToggleEvent(module, enabled))
+    }
+}

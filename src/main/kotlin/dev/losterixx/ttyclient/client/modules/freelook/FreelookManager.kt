@@ -4,6 +4,7 @@ package dev.losterixx.ttyclient.client.modules.freelook
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.FreelookConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
@@ -13,6 +14,9 @@ object FreelookManager : ClientModule {
 
     override val id = "freelook"
     override val configPath = "config/modules/freelook.jsonc"
+    override val displayName = "Freelook"
+    override val description = "Detaches the camera so you can look around freely without moving."
+    override val category = ModuleCategory.VISUAL
 
     private val mc: Minecraft get() = Minecraft.getInstance()
 
@@ -65,6 +69,10 @@ object FreelookManager : ClientModule {
             mc.options.cameraType = it
             originalCameraType = null
         }
+    }
+
+    override fun onDisable() {
+        if (isFreelooking) stopFreelook()
     }
 
     fun isActive(): Boolean = isFreelooking

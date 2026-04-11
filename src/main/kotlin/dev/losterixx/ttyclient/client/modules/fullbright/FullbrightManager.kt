@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.modules.fullbright
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.FullbrightConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import dev.losterixx.ttyclient.mixin.accessors.OptionInstanceAccessor
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
@@ -13,6 +14,9 @@ object FullbrightManager : ClientModule {
 
     override val id = "fullbright"
     override val configPath = "config/modules/fullbright.jsonc"
+    override val displayName = "Fullbright"
+    override val description = "Boosts brightness via gamma override or night-vision effect."
+    override val category = ModuleCategory.VISUAL
 
     private val mc: Minecraft get() = Minecraft.getInstance()
 
@@ -58,6 +62,10 @@ object FullbrightManager : ClientModule {
                 lastLevel = null
             }
         }
+    }
+
+    override fun onDisable() {
+        disable()
     }
 
     fun trigger() {

@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.modules.zoom
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.ZoomConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import kotlin.math.abs
@@ -11,6 +12,9 @@ object ZoomManager : ClientModule {
 
     override val id = "zoom"
     override val configPath = "config/modules/zoom.jsonc"
+    override val displayName = "Zoom"
+    override val description = "Smoothly zooms the FOV while the key is held or toggled."
+    override val category = ModuleCategory.VISUAL
 
     private var isZooming = false
     private var targetZoomLevel = 1.0f
@@ -32,6 +36,10 @@ object ZoomManager : ClientModule {
                 stopZoom()
             }
         }
+    }
+
+    override fun onDisable() {
+        if (isZooming) stopZoom()
     }
 
     fun trigger() {

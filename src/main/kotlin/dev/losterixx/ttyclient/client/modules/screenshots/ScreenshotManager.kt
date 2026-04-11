@@ -4,6 +4,7 @@ import dev.losterixx.ttyclient.client.MainClient
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.ScreenshotConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.minecraft.client.Minecraft
 import net.minecraft.network.chat.ClickEvent
 import net.minecraft.network.chat.Component
@@ -16,6 +17,9 @@ object ScreenshotManager : ClientModule {
 
     override val id = "screenshots"
     override val configPath = "config/modules/screenshots.jsonc"
+    override val displayName = "Screenshots"
+    override val description = "Enhanced screenshot workflow: copy, open folder, and upload."
+    override val category = ModuleCategory.UTILS
 
     private val logger = LoggerFactory.getLogger("TTYClient/Screenshots")
 

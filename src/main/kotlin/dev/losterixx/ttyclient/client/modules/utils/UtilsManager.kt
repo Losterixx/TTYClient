@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.modules.utils
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.UtilsConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.resources.sounds.SimpleSoundInstance
@@ -14,6 +15,9 @@ object UtilsManager : ClientModule {
 
     override val id = "utils"
     override val configPath = "config/modules/utils.jsonc"
+    override val displayName = "Utils"
+    override val description = "Misc helpers: durability warning and more."
+    override val category = ModuleCategory.UTILS
 
     var config: UtilsConfig = UtilsConfig()
         private set

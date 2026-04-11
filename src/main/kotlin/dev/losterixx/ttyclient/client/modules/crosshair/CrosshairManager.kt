@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.modules.crosshair
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.CrosshairConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
@@ -17,6 +18,9 @@ object CrosshairManager : ClientModule {
 
     override val id = "crosshair"
     override val configPath = "config/modules/crosshair.jsonc"
+    override val displayName = "Custom Crosshair"
+    override val description = "Replaces the vanilla crosshair with a fully configurable pixel grid."
+    override val category = ModuleCategory.VISUAL
 
     var config: CrosshairConfig = CrosshairConfig()
         private set

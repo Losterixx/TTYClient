@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.modules.customchat
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.modules.CustomChatConfig
 import dev.losterixx.ttyclient.client.modules.ClientModule
+import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.screens.ChatScreen
@@ -12,6 +13,9 @@ object ChatManager : ClientModule {
 
     override val id = "customchat"
     override val configPath = "config/modules/customchat.jsonc"
+    override val displayName = "Custom Chat"
+    override val description = "Adjustable chat size, infinite history, and persistence across servers."
+    override val category = ModuleCategory.CHAT
 
     private val mc: Minecraft get() = Minecraft.getInstance()
 
