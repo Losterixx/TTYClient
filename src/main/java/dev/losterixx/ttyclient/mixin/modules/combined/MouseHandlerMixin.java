@@ -1,8 +1,10 @@
 package dev.losterixx.ttyclient.mixin.modules.combined;
 
+import dev.losterixx.ttyclient.client.modules.debug.KeyVisualizerManager;
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager;
 import dev.losterixx.ttyclient.client.modules.zoom.ZoomManager;
 import net.minecraft.client.MouseHandler;
+import net.minecraft.client.input.MouseButtonInfo;
 import net.minecraft.client.player.LocalPlayer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -15,6 +17,8 @@ public class MouseHandlerMixin {
 
     @Inject(method = "onScroll", at = @At("HEAD"), cancellable = true)
     private void onMouseScroll(long window, double horizontal, double vertical, CallbackInfo ci) {
+        KeyVisualizerManager.INSTANCE.onScroll(horizontal, vertical);
+
         if (FreelookManager.INSTANCE.handleScroll(vertical)) {
             ci.cancel();
             return;
@@ -22,6 +26,13 @@ public class MouseHandlerMixin {
 
         if (ZoomManager.INSTANCE.handleScroll(vertical)) {
             ci.cancel();
+        }
+    }
+
+    @Inject(method = "onButton", at = @At("HEAD"))
+    private void onMouseButton(long window, MouseButtonInfo info, int action, CallbackInfo ci) {
+        if (action == 1) {
+            KeyVisualizerManager.INSTANCE.onMouseButton(info.button(), info.modifiers());
         }
     }
 
@@ -41,4 +52,3 @@ public class MouseHandlerMixin {
         player.turn(deltaX, deltaY);
     }
 }
-

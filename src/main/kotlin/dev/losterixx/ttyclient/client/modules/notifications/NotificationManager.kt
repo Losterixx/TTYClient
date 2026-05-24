@@ -35,6 +35,7 @@ data class NotificationEntry(
     val type: NotificationType,
     val durationMs: Long,
     val createdAt: Long = System.currentTimeMillis(),
+    val silent: Boolean = false,
 )
 
 object NotificationManager : ClientModule {
@@ -67,12 +68,12 @@ object NotificationManager : ClientModule {
         ClientTickEvents.END_CLIENT_TICK.register { _ ->
             val now = System.currentTimeMillis()
 
-            while (pending.isNotEmpty()) {
-                val entry = pending.poll() ?: break
-                if (active.size >= config.maxVisible) active.removeFirstOrNull()
-                active.add(entry)
-                playSound(entry.type)
-            }
+                while (pending.isNotEmpty()) {
+                    val entry = pending.poll() ?: break
+                    if (active.size >= config.maxVisible) active.removeFirstOrNull()
+                    active.add(entry)
+                    if (!entry.silent) playSound(entry.type)
+                }
 
             active.removeAll { entry ->
                 val age = now - entry.createdAt
@@ -107,10 +108,11 @@ object NotificationManager : ClientModule {
         message: String = "",
         type: NotificationType = NotificationType.INFO,
         durationMs: Long = -1L,
+        silent: Boolean = false,
     ) {
         if (!config.enabled) return
         val duration = if (durationMs < 0L) config.durationMs else durationMs
-        pending.add(NotificationEntry(idCounter.getAndIncrement(), title, message, type, duration))
+        pending.add(NotificationEntry(idCounter.getAndIncrement(), title, message, type, duration, silent = silent))
     }
 
     private fun render(ctx: net.minecraft.client.gui.GuiGraphicsExtractor) {

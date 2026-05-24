@@ -6,6 +6,7 @@ import com.google.gson.JsonObject
 import com.google.gson.Strictness
 import com.google.gson.TypeAdapter
 import com.google.gson.stream.JsonReader
+import com.google.gson.stream.JsonToken
 import com.google.gson.stream.JsonWriter
 import dev.losterixx.ttyclient.client.MainClient
 import dev.losterixx.ttyclient.client.config.configs.GeneralConfig
@@ -28,20 +29,45 @@ object ConfigManager {
         }
 
         override fun read(input: JsonReader): Int {
+            if (input.peek() == JsonToken.NULL) { input.nextNull(); return 0xFF000000.toInt() }
             val s = input.nextString().trim()
-
-            return when {
-                s.startsWith("#") -> when (s.length - 1) {
-                    6 -> (0xFF000000.toInt()) or s.substring(1).toInt(16)
-                    8 -> s.substring(1).toLong(16).toInt()
-                    else -> 0xFF000000.toInt()
-                }
-
-                s.startsWith("0x", ignoreCase = true) -> s.toLong(16).toInt()
-
-                else -> s.toIntOrNull() ?: 0xFF000000.toInt()
-            }
+            return parseHexColor(s) ?: 0xFF000000.toInt()
         }
+    }
+
+    private object NullableHexColorAdapter : TypeAdapter<Int?>() {
+        override fun write(out: JsonWriter, value: Int?) {
+            if (value == null) {
+                out.value("")
+                return
+            }
+
+            HexColorAdapter.write(out, value)
+        }
+
+        override fun read(input: JsonReader): Int? {
+            if (input.peek() == JsonToken.NULL) {
+                input.nextNull()
+                return null
+            }
+
+            val s = input.nextString().trim()
+            if (s.isEmpty() || s.equals("null", ignoreCase = true)) return null
+
+            return parseHexColor(s) ?: 0xFF000000.toInt()
+        }
+    }
+
+    private fun parseHexColor(s: String): Int? = when {
+        s.startsWith("#") -> when (s.length - 1) {
+            6 -> (0xFF000000.toInt()) or s.substring(1).toInt(16)
+            8 -> s.substring(1).toLong(16).toInt()
+            else -> null
+        }
+
+        s.startsWith("0x", ignoreCase = true) -> s.toLong(16).toInt()
+
+        else -> s.toIntOrNull()
     }
 
     private val gson: Gson = GsonBuilder()
@@ -52,7 +78,7 @@ object ConfigManager {
         .setPrettyPrinting()
         .setStrictness(Strictness.LENIENT)
         .registerTypeAdapter(Int::class.java, HexColorAdapter)
-        .registerTypeAdapter(Int::class.javaObjectType, HexColorAdapter)
+        .registerTypeAdapter(Int::class.javaObjectType, NullableHexColorAdapter)
         .create()
 
     private val jsonWriter = CommentedJsonWriter(gson)

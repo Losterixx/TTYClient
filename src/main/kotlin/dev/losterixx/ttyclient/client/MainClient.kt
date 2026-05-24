@@ -10,6 +10,7 @@ import dev.losterixx.ttyclient.client.event.EventBus
 import dev.losterixx.ttyclient.client.modules.autoreconnect.ReconnectManager
 import dev.losterixx.ttyclient.client.modules.crosshair.CrosshairManager
 import dev.losterixx.ttyclient.client.modules.customchat.ChatManager
+import dev.losterixx.ttyclient.client.modules.debug.KeyVisualizerManager
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager
 import dev.losterixx.ttyclient.client.modules.fullbright.FullbrightManager
 import dev.losterixx.ttyclient.client.modules.notifications.NotificationManager

@@ -7,6 +7,9 @@ import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
+import com.mojang.blaze3d.pipeline.BlendFunction
+import com.mojang.blaze3d.pipeline.ColorTargetState
+import com.mojang.blaze3d.pipeline.RenderPipeline
 import net.minecraft.client.AttackIndicatorStatus
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
@@ -21,6 +24,13 @@ object CrosshairManager : ClientModule {
     override val displayName = "Custom Crosshair"
     override val description = "Replaces the vanilla crosshair with a fully configurable pixel grid."
     override val category = ModuleCategory.VISUAL
+
+    private val INVERT_PIPELINE: RenderPipeline by lazy {
+        RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
+            .withLocation(Identifier.fromNamespaceAndPath("ttyclient", "pipeline/crosshair_fill"))
+            .withColorTargetState(ColorTargetState(BlendFunction.INVERT))
+            .build()
+    }
 
     var config: CrosshairConfig = CrosshairConfig()
         private set
@@ -59,17 +69,24 @@ object CrosshairManager : ClientModule {
                 val cx = w / 2
                 val cy = h / 2
 
+                val color = config.color
+
                 val startX = cx - 7
                 val startY = cy - 7
-
-                val color = config.color
 
                 for (row in 0 until 15) {
                     val rowStr = grid[row]
 
                     for (col in 0 until 15) {
                         if (rowStr[col] == 'X') {
-                            ctx.fill(startX + col, startY + row, startX + col + 1, startY + row + 1, color)
+                            val x1 = startX + col
+                            val y1 = startY + row
+
+                            if (color == null) {
+                                ctx.fill(INVERT_PIPELINE, x1, y1, x1 + 1, y1 + 1, -1)
+                            } else {
+                                ctx.fill(x1, y1, x1 + 1, y1 + 1, color)
+                            }
                         }
                     }
                 }
@@ -95,11 +112,13 @@ object CrosshairManager : ClientModule {
                         )
                     } else if (cooldown < 1.0f) {
                         val progress = (cooldown * 17.0f).toInt()
+
                         ctx.blitSprite(
                             RenderPipelines.CROSSHAIR,
                             Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_background"),
                             indicatorX, indicatorY, 16, 4
                         )
+
                         ctx.blitSprite(
                             RenderPipelines.CROSSHAIR,
                             Identifier.withDefaultNamespace("hud/crosshair_attack_indicator_progress"),

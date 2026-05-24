@@ -217,6 +217,11 @@ object KeybindManager {
                 "MMB", "MOUSE2" -> mouseButton = 2
 
                 else -> {
+                    if (part.startsWith("MOUSE") && part.length > 5) {
+                        val n = part.substring(5).toIntOrNull()
+                        if (n != null && n >= 0) { mouseButton = n; continue }
+                    }
+
                     val code = nameToGlfw(part)
 
                     if (code == 0) {
