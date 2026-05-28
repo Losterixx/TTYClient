@@ -62,7 +62,6 @@ class DebugCommand : Command(
     }
 
     private fun showUsage() {
-        val p = CommandManager.prefix
         CommandManager.reply(
             "${MainClient.PREFIX}§fdebug §8- §7Debug utilities",
             "",
@@ -70,7 +69,7 @@ class DebugCommand : Command(
             "   §8▸ §fkeys §7- toggle key press visualizer",
             "",
             " §c--trigger §8(-t) §7<target> [args]",
-            "   §8▸ §fspam <num> §7- send n messages §8(client-side)",
+            "   §8▸ §fspam <num>  §7- send n messages §8(client-side)",
             ""
         )
     }

@@ -10,13 +10,13 @@ import dev.losterixx.ttyclient.client.event.EventBus
 import dev.losterixx.ttyclient.client.modules.autoreconnect.ReconnectManager
 import dev.losterixx.ttyclient.client.modules.crosshair.CrosshairManager
 import dev.losterixx.ttyclient.client.modules.customchat.ChatManager
-import dev.losterixx.ttyclient.client.modules.debug.KeyVisualizerManager
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager
 import dev.losterixx.ttyclient.client.modules.fullbright.FullbrightManager
 import dev.losterixx.ttyclient.client.modules.notifications.NotificationManager
 import dev.losterixx.ttyclient.client.modules.renderutils.RenderUtilsManager
 import dev.losterixx.ttyclient.client.modules.screenshots.ScreenshotManager
 import dev.losterixx.ttyclient.client.modules.utils.UtilsManager
+import dev.losterixx.ttyclient.client.modules.performance.PerformanceManager
 import dev.losterixx.ttyclient.client.modules.zoom.ZoomManager
 import dev.losterixx.ttyclient.client.ui.Theme
 import net.fabricmc.api.ClientModInitializer
@@ -51,7 +51,8 @@ object MainClient : ClientModInitializer {
             RenderUtilsManager,
             UtilsManager,
             ScreenshotManager,
-            NotificationManager
+            NotificationManager,
+            PerformanceManager
         )
 
         // -> Other config watchers

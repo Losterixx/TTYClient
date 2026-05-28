@@ -22,7 +22,9 @@
     "modules.autoreconnect.JoinMultiplayerScreenMixin",
     "modules.renderutils.HeldItemRendererMixin",
     "modules.renderutils.FireOverlayMixin",
-    "modules.screenshots.ScreenshotMixin"
+    "modules.screenshots.ScreenshotMixin",
+    "modules.performance.GameRendererMixin",
+    "modules.performance.HudGuiRendererMixin"
   ],
   "injectors": {
     "defaultRequire": 1
