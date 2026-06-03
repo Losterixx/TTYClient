@@ -27,7 +27,6 @@ object CrosshairManager : ClientModule {
 
     private val INVERT_PIPELINE: RenderPipeline by lazy {
         RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-            .withLocation(Identifier.fromNamespaceAndPath("ttyclient", "pipeline/crosshair_fill"))
             .withColorTargetState(ColorTargetState(BlendFunction.INVERT))
             .build()
     }
