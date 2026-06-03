@@ -9,7 +9,7 @@ data class CrosshairConfig(
     @Comment(
         "Color of the crosshair pixels.",
         "Use hex format: #RRGGBB (opaque) or #AARRGGBB (with alpha).",
-         "Set to null to use vanilla dynamic crosshair color (inverts against background).",
+        "Set to null to use white (#FFFFFF) for maximum visibility.",
         "Default is #E2E2E2"
     )
     var color: Int? = 0xFFE2E2E2.toInt(),

@@ -38,90 +38,105 @@ public class LoadingOverlayMixin {
 
     @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
     private void ttyDrawLoadingScreen(GuiGraphicsExtractor graphics, int mouseX, int mouseY, float deltaTicks, CallbackInfo ci) {
-        ci.cancel();
-
-        int width = graphics.guiWidth();
-        int height = graphics.guiHeight();
-        long now = Util.getMillis();
-
-        if (fadeIn && fadeInStart == -1L) {
-            fadeInStart = now;
+        if (minecraft == null || minecraft.font == null || graphics == null || reload == null) {
+            return;
         }
 
-        float fadeOutAnim = (fadeOutStart > -1L) ? (now - fadeOutStart) / 1000.0f : -1.0f;
-        float fadeInAnim = (fadeInStart  > -1L) ? (now - fadeInStart)  / 500.0f  : -1.0f;
+        try {
+            graphics.guiWidth();
+        } catch (Exception e) {
+            return;
+        }
 
-        float logoAlpha;
+        try {
+            int width = graphics.guiWidth();
+            int height = graphics.guiHeight();
+            long now = Util.getMillis();
 
-        if (fadeOutAnim >= 1.0f) {
-            if (minecraft.screen != null) {
-                minecraft.screen.extractRenderStateWithTooltipAndSubtitles(graphics, 0, 0, deltaTicks);
+            if (fadeIn && fadeInStart == -1L) {
+                fadeInStart = now;
+            }
+
+            float fadeOutAnim = (fadeOutStart > -1L) ? (now - fadeOutStart) / 1000.0f : -1.0f;
+            float fadeInAnim = (fadeInStart  > -1L) ? (now - fadeInStart)  / 500.0f  : -1.0f;
+
+            float logoAlpha;
+
+            if (fadeOutAnim >= 1.0f) {
+                if (minecraft.screen != null) {
+                    minecraft.screen.extractRenderStateWithTooltipAndSubtitles(graphics, 0, 0, deltaTicks);
+                } else {
+                    minecraft.gui.extractDeferredSubtitles();
+                }
+
+                float t = 1.0f - clamp01(fadeOutAnim - 1.0f);
+                int bgAlpha = Mth.ceil(t * 255.0f);
+
+                graphics.nextStratum();
+                graphics.fill(0, 0, width, height, withAlpha(Theme.INSTANCE.getBgPrimary(), bgAlpha));
+
+                logoAlpha = t;
             } else {
-                minecraft.gui.extractDeferredSubtitles();
+                graphics.fill(0, 0, width, height, Theme.INSTANCE.getBgPrimary());
+                logoAlpha = (fadeInAnim >= 0.0f) ? clamp01(fadeInAnim) : 1.0f;
             }
 
-            float t = 1.0f - clamp01(fadeOutAnim - 1.0f);
-            int bgAlpha = Mth.ceil(t * 255.0f);
+            int logoAlphaInt = clampAlpha(logoAlpha);
+            int cx = width / 2;
 
-            graphics.nextStratum();
-            graphics.fill(0, 0, width, height, withAlpha(Theme.INSTANCE.getBgPrimary(), bgAlpha));
+            int fontH = minecraft.font.lineHeight;
+            int lineH = fontH + 2;
+            int totalH = LOGO.length * lineH;
+            int logoY = height / 3 - totalH / 2;
 
-            logoAlpha = t;
-        } else {
-            graphics.fill(0, 0, width, height, Theme.INSTANCE.getBgPrimary());
-            logoAlpha = (fadeInAnim >= 0.0f) ? clamp01(fadeInAnim) : 1.0f;
-        }
+            int accentColor = withAlpha(Theme.INSTANCE.getAccent(), logoAlphaInt);
+            int mutedColor  = withAlpha(Theme.INSTANCE.getTextMuted(), logoAlphaInt);
 
-        int logoAlphaInt = clampAlpha(logoAlpha);
-        int cx = width / 2;
-
-        int fontH = minecraft.font.lineHeight;
-        int lineH = fontH + 2;
-        int totalH = LOGO.length * lineH;
-        int logoY = height / 3 - totalH / 2;
-
-        int accentColor = withAlpha(Theme.INSTANCE.getAccent(), logoAlphaInt);
-        int mutedColor  = withAlpha(Theme.INSTANCE.getTextMuted(), logoAlphaInt);
-
-        for (int i = 0; i < LOGO.length; i++) {
-            int lw = minecraft.font.width(LOGO[i]);
-            graphics.text(minecraft.font, LOGO[i], (cx - lw / 2) - 10, logoY + i * lineH, accentColor, false);
-        }
-
-        String ver = "v" + MainClient.INSTANCE.getVERSION();
-        int vw = minecraft.font.width(ver);
-        graphics.text(minecraft.font, ver, cx - vw / 2, logoY + totalH + 6, mutedColor, false);
-
-        currentProgress = clamp01(currentProgress * 0.95f + reload.getActualProgress() * 0.05f);
-
-        if (fadeOutAnim < 2.0f) {
-            float barAlpha01 = (fadeOutAnim >= 0.0f)
-                    ? (1.0f - clamp01(fadeOutAnim))
-                    : logoAlpha;
-            int barAlpha = clampAlpha(barAlpha01);
-
-            int barW = Math.min(width / 2, 320);
-            int barX = cx - barW / 2;
-            int barY = (int) (height * 0.8325);
-            int barH = 4;
-
-            String pct = Math.round(currentProgress * 100) + "%";
-            int pw = minecraft.font.width(pct);
-            graphics.text(minecraft.font, pct, cx - pw / 2, barY - fontH - 6,
-                    withAlpha(Theme.INSTANCE.getTextMuted(), barAlpha), false);
-
-            graphics.fill(barX, barY, barX + barW, barY + barH,
-                    withAlpha(Theme.INSTANCE.getBgSecondary(), barAlpha));
-
-            int filledW = Math.round(currentProgress * barW);
-            if (filledW > 0) {
-                graphics.fill(barX, barY, barX + filledW, barY + barH,
-                        withAlpha(Theme.INSTANCE.getAccent(), barAlpha));
+            for (int i = 0; i < LOGO.length; i++) {
+                int lw = minecraft.font.width(LOGO[i]);
+                graphics.text(minecraft.font, LOGO[i], (cx - lw / 2) - 10, logoY + i * lineH, accentColor, false);
             }
-        }
 
-        if (fadeOutAnim >= 2.0f) {
-            minecraft.setOverlay(null);
+            String ver = "v" + MainClient.INSTANCE.getVERSION();
+            int vw = minecraft.font.width(ver);
+            graphics.text(minecraft.font, ver, cx - vw / 2, logoY + totalH + 6, mutedColor, false);
+
+            currentProgress = clamp01(currentProgress * 0.95f + reload.getActualProgress() * 0.05f);
+
+            if (fadeOutAnim < 2.0f) {
+                float barAlpha01 = (fadeOutAnim >= 0.0f)
+                        ? (1.0f - clamp01(fadeOutAnim))
+                        : logoAlpha;
+                int barAlpha = clampAlpha(barAlpha01);
+
+                int barW = Math.min(width / 2, 320);
+                int barX = cx - barW / 2;
+                int barY = (int) (height * 0.8325);
+                int barH = 4;
+
+                String pct = Math.round(currentProgress * 100) + "%";
+                int pw = minecraft.font.width(pct);
+                graphics.text(minecraft.font, pct, cx - pw / 2, barY - fontH - 6,
+                        withAlpha(Theme.INSTANCE.getTextMuted(), barAlpha), false);
+
+                graphics.fill(barX, barY, barX + barW, barY + barH,
+                        withAlpha(Theme.INSTANCE.getBgSecondary(), barAlpha));
+
+                int filledW = Math.round(currentProgress * barW);
+                if (filledW > 0) {
+                    graphics.fill(barX, barY, barX + filledW, barY + barH,
+                            withAlpha(Theme.INSTANCE.getAccent(), barAlpha));
+                }
+            }
+
+            if (fadeOutAnim >= 2.0f) {
+                minecraft.setOverlay(null);
+            }
+
+            ci.cancel();
+        } catch (NullPointerException | IllegalStateException e) {
+            System.err.println("[TTYClient] Failed to render custom loading screen, using vanilla. Error: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

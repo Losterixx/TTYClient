@@ -65,7 +65,7 @@ Types: `client`, `command`, `chat`, `bash`, `sequence`, `action`, `noop`
 | **Zoom** | `C` | Smooth animated FOV zoom, scrollable, hold or toggle |
 | **Freelook** | `X` | Detach camera from look direction in third-person |
 | **Fullbright** | `B` | Remove darkness via gamma boost or Night Vision |
-| **Custom Crosshair** | -   | 15x15 pixel grid crosshair, fully configurable in JSONC, inverted colors support |
+| **Custom Crosshair** | -   | 15x15 pixel grid crosshair, fully configurable in JSONC |
 | **Custom Chat** | `I` | Resizable chat window, drag to resize, unlimited history, toggleable chat |
 | **AutoReconnect** | -   | Auto-reconnect with countdown after disconnect  |
 | **RenderUtils** | -   | Custom shield/totem model transforms, low fire overlay |

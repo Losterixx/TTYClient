@@ -8,7 +8,7 @@ data class TimeHudConfig(
     var enabled: Boolean = true,
     var anchor: HudAnchor = HudAnchor.BOTTOM_RIGHT,
     var text: String = "{H}:{M}:{S}",
-    var x: Int = 7,
+    var x: Int = 6,
     var y: Int = 17,
 )
 

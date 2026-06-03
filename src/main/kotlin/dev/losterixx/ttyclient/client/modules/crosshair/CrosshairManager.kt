@@ -7,9 +7,6 @@ import dev.losterixx.ttyclient.client.modules.ModuleCategory
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry
 import net.fabricmc.fabric.api.client.rendering.v1.hud.VanillaHudElements
-import com.mojang.blaze3d.pipeline.BlendFunction
-import com.mojang.blaze3d.pipeline.ColorTargetState
-import com.mojang.blaze3d.pipeline.RenderPipeline
 import net.minecraft.client.AttackIndicatorStatus
 import net.minecraft.client.CameraType
 import net.minecraft.client.Minecraft
@@ -24,12 +21,6 @@ object CrosshairManager : ClientModule {
     override val displayName = "Custom Crosshair"
     override val description = "Replaces the vanilla crosshair with a fully configurable pixel grid."
     override val category = ModuleCategory.VISUAL
-
-    private val INVERT_PIPELINE: RenderPipeline by lazy {
-        RenderPipeline.builder(RenderPipelines.GUI_SNIPPET)
-            .withColorTargetState(ColorTargetState(BlendFunction.INVERT))
-            .build()
-    }
 
     var config: CrosshairConfig = CrosshairConfig()
         private set
@@ -73,6 +64,8 @@ object CrosshairManager : ClientModule {
                 val startX = cx - 7
                 val startY = cy - 7
 
+                val renderColor = color ?: 0xFFFFFFFF.toInt()
+
                 for (row in 0 until 15) {
                     val rowStr = grid[row]
 
@@ -81,11 +74,7 @@ object CrosshairManager : ClientModule {
                             val x1 = startX + col
                             val y1 = startY + row
 
-                            if (color == null) {
-                                ctx.fill(INVERT_PIPELINE, x1, y1, x1 + 1, y1 + 1, -1)
-                            } else {
-                                ctx.fill(x1, y1, x1 + 1, y1 + 1, color)
-                            }
+                            ctx.fill(x1, y1, x1 + 1, y1 + 1, renderColor)
                         }
                     }
                 }
@@ -130,7 +119,3 @@ object CrosshairManager : ClientModule {
         }
     }
 }
-
-
-
-
