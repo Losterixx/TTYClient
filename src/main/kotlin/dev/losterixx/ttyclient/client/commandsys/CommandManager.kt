@@ -4,6 +4,7 @@ import dev.losterixx.ttyclient.client.MainClient
 import dev.losterixx.ttyclient.client.commandsys.commands.ConfigCommand
 import dev.losterixx.ttyclient.client.commandsys.commands.DebugCommand
 import dev.losterixx.ttyclient.client.commandsys.commands.HelpCommand
+import dev.losterixx.ttyclient.client.commandsys.commands.HudCommand
 import dev.losterixx.ttyclient.client.commandsys.commands.InfoCommand
 import dev.losterixx.ttyclient.client.commandsys.commands.McFetchCommand
 import dev.losterixx.ttyclient.client.commandsys.commands.ModuleCommand
@@ -29,6 +30,7 @@ object CommandManager {
         register(ModuleCommand())
         register(ScreenshotCommand())
         register(DebugCommand())
+        register(HudCommand())
 
         ClientSendMessageEvents.ALLOW_CHAT.register { message ->
             if (message.startsWith(prefix)) {

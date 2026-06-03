@@ -47,6 +47,7 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
         listOf(
             MenuItem("Singleplayer", "s") { minecraft?.setScreen(SelectWorldScreen(this)) },
             MenuItem("Multiplayer", "m") { minecraft?.setScreen(JoinMultiplayerScreen(this)) },
+            MenuItem("Config Manager", "c") { minecraft?.setScreen(ConfigEditorScreen()) },
             MenuItem("Options", "o") { minecraft?.setScreen(OptionsScreen(this, minecraft!!.options, false)) },
             MenuItem("Quit", "q") { minecraft?.stop() }
         )

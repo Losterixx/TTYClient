@@ -12,6 +12,7 @@ import dev.losterixx.ttyclient.client.modules.crosshair.CrosshairManager
 import dev.losterixx.ttyclient.client.modules.customchat.ChatManager
 import dev.losterixx.ttyclient.client.modules.freelook.FreelookManager
 import dev.losterixx.ttyclient.client.modules.fullbright.FullbrightManager
+import dev.losterixx.ttyclient.client.modules.hud.HudManager
 import dev.losterixx.ttyclient.client.modules.notifications.NotificationManager
 import dev.losterixx.ttyclient.client.modules.renderutils.RenderUtilsManager
 import dev.losterixx.ttyclient.client.modules.screenshots.ScreenshotManager
@@ -52,7 +53,8 @@ object MainClient : ClientModInitializer {
             UtilsManager,
             ScreenshotManager,
             NotificationManager,
-            PerformanceManager
+            PerformanceManager,
+            HudManager
         )
 
         // -> Other config watchers

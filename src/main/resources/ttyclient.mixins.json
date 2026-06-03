@@ -24,7 +24,8 @@
     "modules.renderutils.FireOverlayMixin",
     "modules.screenshots.ScreenshotMixin",
     "modules.performance.GameRendererMixin",
-    "modules.performance.HudGuiRendererMixin"
+    "modules.performance.HudGuiRendererMixin",
+    "modules.hud.HudRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 1

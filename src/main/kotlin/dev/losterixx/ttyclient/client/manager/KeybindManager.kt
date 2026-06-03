@@ -51,6 +51,11 @@ object KeybindManager {
             exec = "config"
         ),
         ConfiguredKeybind(
+            bind = "ALT+H",
+            type = "client",
+            exec = "hud"
+        ),
+        ConfiguredKeybind(
             bind = "X",
             type = "client",
             exec = "module --trigger freelook"
