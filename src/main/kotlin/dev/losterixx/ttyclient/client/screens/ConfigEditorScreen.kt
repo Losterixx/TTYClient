@@ -3,6 +3,7 @@ package dev.losterixx.ttyclient.client.screens
 import com.google.gson.Gson
 import dev.losterixx.ttyclient.client.MainClient
 import dev.losterixx.ttyclient.client.config.ConfigManager
+import dev.losterixx.ttyclient.client.screens.TTYClientTitleScreen.Companion.JETBRAINS_FONT
 import dev.losterixx.ttyclient.client.ui.Draw
 import dev.losterixx.ttyclient.client.ui.Theme
 import net.minecraft.client.gui.Font
@@ -44,6 +45,26 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
         const val SB_THICKNESS = 2
         const val SB_PADDING = 1
+
+        fun GuiGraphicsExtractor.textWithFont(font: Font, text: String, x: Int, y: Int, color: Int, shadow: Boolean = false) {
+            val component = Component.literal(text).setStyle(Style.EMPTY.withFont(JETBRAINS_FONT))
+            this.text(font, component, x, y, color, shadow)
+        }
+
+        fun GuiGraphicsExtractor.textWithFont(font: Font, component: Component, x: Int, y: Int, color: Int, shadow: Boolean = false) {
+            val styledComponent = component.copy().setStyle(component.style.withFont(JETBRAINS_FONT))
+            this.text(font, styledComponent, x, y, color, shadow)
+        }
+
+        fun Font.widthWithFont(text: String): Int {
+            val component = Component.literal(text).setStyle(Style.EMPTY.withFont(JETBRAINS_FONT))
+            return this.width(component)
+        }
+
+        fun Font.widthWithFont(component: Component): Int {
+            val styledComponent = component.copy().setStyle(component.style.withFont(JETBRAINS_FONT))
+            return this.width(styledComponent)
+        }
     }
 
     private data class Entry(val file: File, val depth: Int)
@@ -250,19 +271,19 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         Draw.rect(ctx, 0, 0, etw, HDR_H, Theme.editorTheme.crust)
         Draw.rect(ctx, 0, HDR_H - 1, etw, 1, Theme.editorTheme.overlay)
         val expLabel = "EXPLORER"
-        if (explorerVisible) ctx.text(tr, expLabel, (etw - tr.width(expLabel)) / 2, (HDR_H - tr.lineHeight) / 2, Theme.editorTheme.treeOther, false)
+        if (explorerVisible) ctx.textWithFont(tr, expLabel, (etw - tr.widthWithFont(expLabel)) / 2, (HDR_H - tr.lineHeight) / 2, Theme.editorTheme.treeOther, false)
 
         Draw.rect(ctx, etw + 1, 0, width - etw - 1, HDR_H, Theme.editorTheme.mantle)
         Draw.rect(ctx, etw + 1, HDR_H - 1, width - etw - 1, 1, Theme.editorTheme.overlay)
         val hdr = (openFile?.name ?: "Config Editor") + if (dirty) " ●" else ""
-        ctx.text(tr, hdr, etw + 1 + (width - etw - 1 - tr.width(hdr)) / 2, (HDR_H - tr.lineHeight) / 2, Theme.editorTheme.text, false)
+        ctx.textWithFont(tr, hdr, etw + 1 + (width - etw - 1 - tr.widthWithFont(hdr)) / 2, (HDR_H - tr.lineHeight) / 2, Theme.editorTheme.text, false)
 
         Draw.rect(ctx, 0, cy2, width, STATUS_H, Theme.editorTheme.mantle)
         Draw.rect(ctx, 0, cy2, width, 1, Theme.editorTheme.overlay)
         val selInfo = if (hasSel()) "  ${selText().length} sel  ·  " else "  "
         val st = if (openFile != null) "${selInfo}${if (dirty) "● unsaved" else "✔ saved"}   Ln ${curLine+1}, Col ${curCol+1}   [Ctrl+S] save · [Esc] close"
                 else "  [Alt+↑/↓] navigate · [Alt+Enter] open · [Alt+Shift+←/→] resize tree · [Alt+Shift+↑/↓] toggle tree"
-        ctx.text(tr, st, 4, cy2 + (STATUS_H - tr.lineHeight) / 2 + 2, Theme.editorTheme.comment, false)
+        ctx.textWithFont(tr, st, 4, cy2 + (STATUS_H - tr.lineHeight) / 2 + 2, Theme.editorTheme.comment, false)
 
         if (explorerVisible) Draw.rect(ctx, etw, 0, 1, height - 14, Theme.editorTheme.overlay)
 
@@ -285,7 +306,7 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         Draw.rect(ctx, 0, y0, treeWidth, aH, Theme.editorTheme.crust)
 
         val rootY = y0 - treeScroll + 3
-        if (rootY + lh > y0 && rootY < y0 + aH) ctx.text(tr, "~/TTYClient", 3, rootY + (lh - tr.lineHeight) / 2, Theme.editorTheme.treeDir, false)
+        if (rootY + lh > y0 && rootY < y0 + aH) ctx.textWithFont(tr, "~/TTYClient", 3, rootY + (lh - tr.lineHeight) / 2, Theme.editorTheme.treeDir, false)
 
         tree.forEachIndexed { i, e ->
             val ey = y0 + (i + 1) * lh - treeScroll + 3
@@ -317,7 +338,7 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
                 else -> Theme.editorTheme.treeOther
             }
 
-            ctx.text(tr, "$icon${e.file.name}", 4 + indent, ey + (lh - tr.lineHeight) / 2, col, false)
+            ctx.textWithFont(tr, "$icon${e.file.name}", 4 + indent, ey + (lh - tr.lineHeight) / 2, col, false)
         }
     }
 
@@ -327,13 +348,13 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
         if (openFile == null) {
             val title = Component.literal("TTYClient Config Editor").withStyle(Style.EMPTY.withBold(true))
-            ctx.text(tr, title, ex + (width - ex - tr.width(title)) / 2, y0 + (aH - tr.lineHeight) / 2 - 20, Theme.editorTheme.comment, false)
+            ctx.textWithFont(tr, title, ex + (width - ex - tr.widthWithFont(title)) / 2, y0 + (aH - tr.lineHeight) / 2 - 20, Theme.editorTheme.comment, false)
             val msg = "Select a file from the explorer to edit it"
-            ctx.text(tr, msg, ex + (width - ex - tr.width(msg)) / 2, y0 + (aH - tr.lineHeight) / 2, Theme.editorTheme.comment, false)
+            ctx.textWithFont(tr, msg, ex + (width - ex - tr.widthWithFont(msg)) / 2, y0 + (aH - tr.lineHeight) / 2, Theme.editorTheme.comment, false)
             return
         }
 
-        val gutterW = tr.width("0".repeat(lines.size.toString().length)) + 8
+        val gutterW = tr.widthWithFont("0".repeat(lines.size.toString().length)) + 8
         val codeX = ex + gutterW
         val textX = codeX + 2 - edHScroll
 
@@ -362,7 +383,7 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
             val li = edScroll + i; if (li >= lines.size) break
             val ey = y0 + i * lh
             val ns = "${li + 1}"
-            ctx.text(tr, ns, ex + gutterW - tr.width(ns) - 4, ey + (lh - tr.lineHeight) / 2, if (li == curLine) Theme.editorTheme.gutterActive else Theme.editorTheme.gutter, false)
+            ctx.textWithFont(tr, ns, ex + gutterW - tr.widthWithFont(ns) - 4, ey + (lh - tr.lineHeight) / 2, if (li == curLine) Theme.editorTheme.gutterActive else Theme.editorTheme.gutter, false)
         }
 
         Draw.rect(ctx, ex + gutterW, y0, 1, aH, Theme.editorTheme.overlay)
@@ -386,11 +407,11 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
     private fun drawEdHBar(ctx: GuiGraphicsExtractor, cy1: Int, cy2: Int) {
         if (openFile == null) return
 
-        val gutterW = font.width("0".repeat(lines.size.toString().length)) + 8
+        val gutterW = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
         val codeStart = etw + 1 + gutterW + 1
         val codeEnd = width - SB_PADDING - SB_THICKNESS
         val codeAreaW = (codeEnd - codeStart).coerceAtLeast(1)
-        val maxW = (lines.maxOfOrNull { font.width(it) + 4 } ?: 0)
+        val maxW = (lines.maxOfOrNull { font.widthWithFont(it) + 4 } ?: 0)
         val maxHScr = (maxW - codeAreaW).coerceAtLeast(0)
         val trackX = etw + 1 + SB_PADDING
         val trackY = cy2 - SB_PADDING - SB_THICKNESS
@@ -473,7 +494,7 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
     private fun renderLine(ctx: GuiGraphicsExtractor, tr: Font, raw: String, startX: Int, ey: Int, lh: Int) {
         val textY   = ey + (lh - tr.lineHeight) / 2
         val matches = HEX_REGEX.findAll(raw).toList()
-        if (matches.isEmpty()) { ctx.text(tr, colorizedText(raw), startX, textY, Theme.editorTheme.subtext, false); return }
+        if (matches.isEmpty()) { ctx.textWithFont(tr, colorizedText(raw), startX, textY, Theme.editorTheme.subtext, false); return }
 
         val ss = tr.lineHeight - 2
         var x = startX
@@ -482,46 +503,46 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         for (m in matches) {
             if (m.range.first > pos) {
                 val seg = raw.substring(pos, m.range.first)
-                ctx.text(tr, colorizedText(seg), x, textY, Theme.editorTheme.subtext, false)
-                x += tr.width(seg)
+                ctx.textWithFont(tr, colorizedText(seg), x, textY, Theme.editorTheme.subtext, false)
+                x += tr.widthWithFont(seg)
             }
 
-            ctx.text(tr, Component.literal("\"").withStyle { it.withColor(rgb(Theme.editorTheme.string)) }, x, textY, Theme.editorTheme.subtext, false)
-            x += tr.width("\"") + 1
+            ctx.textWithFont(tr, Component.literal("\"").withStyle { it.withColor(rgb(Theme.editorTheme.string)) }, x, textY, Theme.editorTheme.subtext, false)
+            x += tr.widthWithFont("\"") + 1
 
             val argb = hexArgb(m.groupValues[1])
             Draw.rect(ctx, x, ey + 1, ss, ss, argb)
             x += ss + 2
 
             val tail = m.value.drop(1)
-            ctx.text(tr, Component.literal(tail).withStyle { it.withColor(rgb(Theme.editorTheme.string)) }, x, textY, Theme.editorTheme.subtext, false)
-            x += tr.width(tail)
+            ctx.textWithFont(tr, Component.literal(tail).withStyle { it.withColor(rgb(Theme.editorTheme.string)) }, x, textY, Theme.editorTheme.subtext, false)
+            x += tr.widthWithFont(tail)
 
             pos = m.range.last + 1
         }
 
-        if (pos < raw.length) ctx.text(tr, colorizedText(raw.substring(pos)), x, textY, Theme.editorTheme.subtext, false)
+        if (pos < raw.length) ctx.textWithFont(tr, colorizedText(raw.substring(pos)), x, textY, Theme.editorTheme.subtext, false)
     }
 
     private fun colToVisualX(tr: Font, raw: String, col: Int, startX: Int): Int {
         val ss = tr.lineHeight - 2
         val matches = HEX_REGEX.findAll(raw).toList()
-        if (matches.isEmpty()) return startX + tr.width(raw.take(col))
+        if (matches.isEmpty()) return startX + tr.widthWithFont(raw.take(col))
 
         var x = startX
         var pos = 0
 
         for (m in matches) {
-            if (col <= m.range.first) return x + tr.width(raw.substring(pos, col))
-            x += tr.width(raw.substring(pos, m.range.first + 1))
+            if (col <= m.range.first) return x + tr.widthWithFont(raw.substring(pos, col))
+            x += tr.widthWithFont(raw.substring(pos, m.range.first + 1))
             x += ss + 2
 
-            if (col <= m.range.last + 1) return x + tr.width(raw.substring(m.range.first + 1, col))
-            x += tr.width(m.value.drop(1))
+            if (col <= m.range.last + 1) return x + tr.widthWithFont(raw.substring(m.range.first + 1, col))
+            x += tr.widthWithFont(m.value.drop(1))
             pos = m.range.last + 1
         }
 
-        return x + tr.width(raw.substring(pos, col))
+        return x + tr.widthWithFont(raw.substring(pos, col))
     }
 
     private fun saveAndClose() {
@@ -548,19 +569,19 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         val modalX = (width  - MODAL_W) / 2
         val modalY = (height - MODAL_H) / 2
 
-        Draw.rect(ctx, modalX, modalY, MODAL_W, MODAL_H, Theme.editorTheme.crust)
-        Draw.rectOutline(ctx, modalX, modalY, MODAL_W, MODAL_H, Theme.editorTheme.overlay)
+        Draw.roundedRect(ctx, modalX, modalY, MODAL_W, MODAL_H, 8, Theme.editorTheme.crust)
+        Draw.roundedRectOutline(ctx, modalX, modalY, MODAL_W, MODAL_H, 8, Theme.editorTheme.overlay)
 
         val tr = font
 
-        val title = "⚠ Unsaved Changes ⚠"
-        ctx.text(tr, title, modalX + (MODAL_W - tr.width(title)) / 2, modalY + 10, 0xFFFFAA00.toInt(), false)
+        val title = "\uF071 Unsaved Changes \uF071"
+        ctx.textWithFont(tr, title, modalX + (MODAL_W - tr.widthWithFont(title)) / 2, modalY + 10, 0xFFFFAA00.toInt(), false)
 
         val msg = "You have unsaved changes. What would you like to do?"
-        ctx.text(tr, msg, modalX + (MODAL_W - tr.width(msg)) / 2, modalY + 28, Theme.editorTheme.subtext, false)
+        ctx.textWithFont(tr, msg, modalX + (MODAL_W - tr.widthWithFont(msg)) / 2, modalY + 28, Theme.editorTheme.subtext, false)
 
-        val hint = "Use keys  [S] · [C] · [R] or click a button"
-        ctx.text(tr, hint, modalX + (MODAL_W - tr.width(hint)) / 2, modalY + 40, Theme.editorTheme.comment, false)
+        val hint = "Use keys [S]·[C]·[R] or click a button"
+        ctx.textWithFont(tr, hint, modalX + (MODAL_W - tr.widthWithFont(hint)) / 2, modalY + 40, Theme.editorTheme.comment, false)
 
         val totalBtnW = MODAL_BTN_W * 3 + MODAL_BTN_GAP * 2
         val bX = modalX + (MODAL_W - totalBtnW) / 2
@@ -568,24 +589,36 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
         val sX = bX
         val sHov = mx in sX until sX + MODAL_BTN_W && my in bY until bY + MODAL_BTN_H
-        Draw.rect(ctx, sX, bY, MODAL_BTN_W, MODAL_BTN_H, if (sHov) 0xFF0F4223.toInt() else 0xFF0B341B.toInt())
-        Draw.rectOutline(ctx, sX, bY, MODAL_BTN_W, MODAL_BTN_H, if (sHov) 0xFF378456.toInt() else 0xFF1B5A35.toInt())
+        Draw.roundedRect(ctx, sX, bY, MODAL_BTN_W, MODAL_BTN_H, 4, if (sHov) Draw.withAlpha(Theme.editorTheme.surface, 100) else Draw.withAlpha(Theme.editorTheme.mantle, 180))
+
         val sLbl = "[S] Save"
-        ctx.text(tr, sLbl, sX + (MODAL_BTN_W - tr.width(sLbl)) / 2, bY + (MODAL_BTN_H - tr.lineHeight) / 2 + 1, 0xFFBBFFBB.toInt(), false)
+        val slw = tr.widthWithFont(sLbl)
+        val slx = sX + (MODAL_BTN_W - slw) / 2
+        val sly = bY + (MODAL_BTN_H - tr.lineHeight) / 2
+        ctx.textWithFont(tr, sLbl, slx, sly, Theme.textSecondary, false)
+        Draw.rect(ctx, slx - 7, sly + tr.lineHeight + 4, slw + 14, 1, 0xFF4CAF50.toInt())
 
         val cX = bX + MODAL_BTN_W + MODAL_BTN_GAP
         val cHov = mx in cX until cX + MODAL_BTN_W && my in bY until bY + MODAL_BTN_H
-        Draw.rect(ctx, cX, bY, MODAL_BTN_W, MODAL_BTN_H, if (cHov) Theme.editorTheme.surface else Theme.editorTheme.mantle)
-        Draw.rectOutline(ctx, cX, bY, MODAL_BTN_W, MODAL_BTN_H, if (cHov) Theme.editorTheme.overlay else Draw.withAlpha(Theme.editorTheme.overlay, 90))
+        Draw.roundedRect(ctx, cX, bY, MODAL_BTN_W, MODAL_BTN_H, 4, if (cHov) Draw.withAlpha(Theme.editorTheme.surface, 100) else Draw.withAlpha(Theme.editorTheme.mantle, 180))
+
         val cLbl = "[C] Cancel"
-        ctx.text(tr, cLbl, cX + (MODAL_BTN_W - tr.width(cLbl)) / 2, bY + (MODAL_BTN_H - tr.lineHeight) / 2 + 1, Theme.editorTheme.subtext, false)
+        val clw = tr.widthWithFont(cLbl)
+        val clx = cX + (MODAL_BTN_W - clw) / 2
+        val cly = bY + (MODAL_BTN_H - tr.lineHeight) / 2
+        ctx.textWithFont(tr, cLbl, clx, cly, Theme.textSecondary, false)
+        Draw.rect(ctx, clx - 7, cly + tr.lineHeight + 4, clw + 14, 1, Theme.editorTheme.overlay)
 
         val rX = cX + MODAL_BTN_W + MODAL_BTN_GAP
         val rHov = mx in rX until rX + MODAL_BTN_W && my in bY until bY + MODAL_BTN_H
-        Draw.rect(ctx, rX, bY, MODAL_BTN_W, MODAL_BTN_H, if (rHov) 0xFF6D2727.toInt() else 0xFF611F1F.toInt())
-        Draw.rectOutline(ctx, rX, bY, MODAL_BTN_W, MODAL_BTN_H, if (rHov) 0xFFE26060.toInt() else 0xFFBA3C3C.toInt())
+        Draw.roundedRect(ctx, rX, bY, MODAL_BTN_W, MODAL_BTN_H, 4, if (rHov) Draw.withAlpha(Theme.editorTheme.surface, 100) else Draw.withAlpha(Theme.editorTheme.mantle, 180))
+
         val rLbl = "[R] Reset"
-        ctx.text(tr, rLbl, rX + (MODAL_BTN_W - tr.width(rLbl)) / 2, bY + (MODAL_BTN_H - tr.lineHeight) / 2 + 1, 0xFFFFBBBB.toInt(), false)
+        val rlw = tr.widthWithFont(rLbl)
+        val rlx = rX + (MODAL_BTN_W - rlw) / 2
+        val rly = bY + (MODAL_BTN_H - tr.lineHeight) / 2
+        ctx.textWithFont(tr, rLbl, rlx, rly, Theme.textSecondary, false)
+        Draw.rect(ctx, rlx - 7, rly + tr.lineHeight + 4, rlw + 14, 1, 0xFFF44336.toInt())
     }
 
     override fun keyPressed(input: KeyEvent): Boolean {
@@ -1053,14 +1086,14 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         edScroll = edScroll.coerceAtLeast(0)
 
         if (openFile != null && lines.isNotEmpty() && curLine < lines.size) {
-            val gutterW  = font.width("0".repeat(lines.size.toString().length)) + 8
+            val gutterW  = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
             val codeAreaW = ((width - SB_PADDING - SB_THICKNESS) - (etw + 1 + gutterW + 1)).coerceAtLeast(1)
             val curRelX   = colToVisualX(font, lines[curLine], curCol, 0)
 
             if (curRelX < edHScroll) edHScroll = curRelX
             if (curRelX > edHScroll + codeAreaW - 4) edHScroll = curRelX - codeAreaW + 4
 
-            val maxW = lines.maxOfOrNull { font.width(it) + 4 } ?: 0
+            val maxW = lines.maxOfOrNull { font.widthWithFont(it) + 4 } ?: 0
             edHScroll = edHScroll.coerceIn(0, (maxW - codeAreaW).coerceAtLeast(0))
         }
     }
@@ -1118,10 +1151,10 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
             val hBarX0 = etw + 1 + SB_PADDING
             val hBarX1 = width - SB_PADDING - SB_THICKNESS - SB_PADDING
             if (my in hBarY - 1..hBarY + SB_THICKNESS && mx in hBarX0 until hBarX1) {
-                val gutterW  = font.width("0".repeat(lines.size.toString().length)) + 8
+                val gutterW  = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
                 val codeAreaW = ((width - SB_PADDING - SB_THICKNESS) - (etw + 1 + gutterW + 1)).coerceAtLeast(1)
                 val trackW = hBarX1 - hBarX0
-                val maxW = lines.maxOfOrNull { font.width(it) + 4 } ?: 0
+                val maxW = lines.maxOfOrNull { font.widthWithFont(it) + 4 } ?: 0
                 val maxHScr = (maxW - codeAreaW).coerceAtLeast(0)
 
                 edHScroll = ((mx - hBarX0).toFloat() / trackW * maxW - codeAreaW / 2).toInt().coerceIn(0, maxHScr)
@@ -1150,13 +1183,13 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
         if (mx > etw && my >= HDR_H && my < height - STATUS_H && openFile != null) {
             edFocus = true
-            val gutterW = font.width("0".repeat(lines.size.toString().length)) + 8
+            val gutterW = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
             val codeX = etw + 1 + gutterW + 2 - edHScroll
 
             val clickedLine = (edScroll + (my - HDR_H) / lh).coerceIn(0, lines.size - 1)
             curLine = clickedLine
             val raw = lines[curLine]; var col = 0; var x = codeX
-            for (ch in raw) { val cw = font.width(ch.toString()); if (x + cw / 2 > mx) break; x += cw; col++ }
+            for (ch in raw) { val cw = font.widthWithFont(ch.toString()); if (x + cw / 2 > mx) break; x += cw; col++ }
             curCol = col.coerceAtMost(raw.length)
 
             if (doubled) {
@@ -1193,11 +1226,11 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
         if (draggingHBar) {
             val mx = (click.x() + offsetX).toInt()
-            val gutterW = font.width("0".repeat(lines.size.toString().length)) + 8
+            val gutterW = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
             val codeAreaW = ((width - SB_PADDING - SB_THICKNESS) - (etw + 1 + gutterW + 1)).coerceAtLeast(1)
             val trackX = etw + 1 + SB_PADDING
             val trackW = (width - SB_PADDING - SB_THICKNESS) - SB_PADDING - trackX
-            val maxW = lines.maxOfOrNull { font.width(it) + 4 } ?: 0
+            val maxW = lines.maxOfOrNull { font.widthWithFont(it) + 4 } ?: 0
             val maxHScr = (maxW - codeAreaW).coerceAtLeast(1)
             val thumbW = (trackW * codeAreaW.toFloat() / maxW).toInt().coerceAtLeast(8).coerceAtMost(trackW)
             val scrollable = (trackW - thumbW).coerceAtLeast(1)
@@ -1209,13 +1242,13 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         if (dragging && edFocus && openFile != null) {
             val mx = (click.x() + offsetX).toInt(); val my = (click.y() + offsetY).toInt()
             val lh = font.lineHeight + 3
-            val gutterW = font.width("0".repeat(lines.size.toString().length)) + 8
+            val gutterW = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
             val codeX = etw + 1 + gutterW + 2 - edHScroll
 
             val clickedLine = (edScroll + (my - HDR_H) / lh).coerceIn(0, lines.size - 1)
             curLine = clickedLine
             val raw = lines[curLine]; var col = 0; var x = codeX
-            for (ch in raw) { val cw = font.width(ch.toString()); if (x + cw / 2 > mx) break; x += cw; col++ }
+            for (ch in raw) { val cw = font.widthWithFont(ch.toString()); if (x + cw / 2 > mx) break; x += cw; col++ }
             curCol = col.coerceAtMost(raw.length)
 
             clamp()
@@ -1254,9 +1287,9 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
             if (vAmt != 0.0)
                 edScroll = (edScroll - (vAmt * 3).toInt()).coerceIn(0, (lines.size - 1).coerceAtLeast(0))
             if (hAmt != 0.0 && openFile != null) {
-                val gutterW = font.width("0".repeat(lines.size.toString().length)) + 8
+                val gutterW = font.widthWithFont("0".repeat(lines.size.toString().length)) + 8
                 val codeAreaW = ((width - SB_PADDING - SB_THICKNESS) - (etw + 1 + gutterW + 1)).coerceAtLeast(1)
-                val maxW = lines.maxOfOrNull { font.width(it) + 4 } ?: 0
+                val maxW = lines.maxOfOrNull { font.widthWithFont(it) + 4 } ?: 0
 
                 edHScroll = (edHScroll + (hAmt * 20).toInt()).coerceIn(0, (maxW - codeAreaW).coerceAtLeast(0))
             }
