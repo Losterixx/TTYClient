@@ -2,6 +2,7 @@ package dev.losterixx.ttyclient.client.screens
 
 import com.mojang.realmsclient.RealmsMainScreen
 import dev.losterixx.ttyclient.client.MainClient
+import dev.losterixx.ttyclient.client.MainClient.MOD_ID
 import dev.losterixx.ttyclient.client.config.ConfigManager
 import dev.losterixx.ttyclient.client.config.configs.TitleScreenConfig
 import dev.losterixx.ttyclient.client.ui.Draw
@@ -17,6 +18,8 @@ import net.minecraft.client.input.CharacterEvent
 import net.minecraft.client.input.KeyEvent
 import net.minecraft.client.input.MouseButtonEvent
 import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.FontDescription
+import net.minecraft.resources.Identifier
 
 class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
 
@@ -26,17 +29,21 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
         private val FG = 0xFFABB2BF.toInt()
 
         private val LOGO = listOf(
-            "  ______      _____      __  __ ",
-            " /\\__   _\\   /\\__  _\\   /\\ \\_\\ \\",
-            "   \\/_/\\ \\/   \\/_/\\ \\/   \\ \\____ \\",
-            "         \\ \\_\\       \\ \\_\\    \\/\\____\\",
-            "           \\/_/        \\/_/     \\/____/"
+            " ______     ______     __  __    ",
+            "/\\__  _\\   /\\__  _\\   /\\ \\_\\ \\   ",
+            "\\/_/\\ \\/   \\/_/\\ \\/   \\ \\____ \\  ",
+            "   \\ \\_\\      \\ \\_\\    \\/\\_____\\ ",
+            "    \\/_/       \\/_/     \\/_____/ "
         )
 
         private const val CONFIG_PATH = "config/titlescreen.jsonc"
 
         fun loadConfig(): TitleScreenConfig = ConfigManager.loadConfig(CONFIG_PATH, TitleScreenConfig::class.java) { TitleScreenConfig() }
         fun saveConfig(cfg: TitleScreenConfig) = ConfigManager.saveConfig(CONFIG_PATH, cfg)
+
+        val JETBRAINS_FONT: FontDescription = FontDescription.Resource(
+            Identifier.fromNamespaceAndPath(MOD_ID, "jetbrains_mono")
+        )
     }
 
     private val actionMap: Map<String, TTYClientTitleScreen.() -> Unit> = mapOf(
@@ -92,11 +99,11 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
         Draw.rect(context, 0, 0, width, height, Theme.bgPrimary)
 
         val cx = width / 2
-        val lh = Draw.fontHeight + 2
+        val lh = Draw.fontHeight
 
         val logoTop = height / 4 - (LOGO.size * lh) / 2
         LOGO.forEachIndexed { i, line ->
-            Draw.textCentered(context, line, cx - 10, logoTop + i * lh, 0, Theme.accent, false)
+            Draw.textCentered(context, line, cx, logoTop + i * lh, 0, Theme.accent, false)
         }
 
         val versionY = logoTop + LOGO.size * lh + 6
@@ -104,9 +111,9 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
 
         val activeItems = items
         val keyColW = Draw.textWidth("[m]") + 2
-        val blockW = 140
+        val blockW = 120
         val blockX = cx - blockW / 2
-        val labelX = blockX + keyColW + 6
+        val labelX = blockX + keyColW + 2
         val menuTop = versionY + lh + 28
         val itemH = lh + 8
         val hPad = 12
@@ -128,7 +135,7 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
         val mouseInMenuArea = mouseX >= cardX && mouseX < cardX + cardW && mouseY >= cardY && mouseY < cardY + cardH
 
         activeItems.forEachIndexed { i, item ->
-            val y = menuTop + i * itemH
+            val y = menuTop + i * itemH - 2
             val rowX = blockX - hPad + 2
             val rowW = blockW + hPad * 2 - 4
             val rowH = lh + 4
@@ -138,12 +145,12 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
 
             if (hovered) {
                 hoveredIndex = i
-                Draw.roundedRect(context, rowX, y - 4, rowW, rowH, hoverRadii, Draw.withAlpha(Theme.bgHover, 200))
-                Draw.roundedRect(context, rowX, y - 4, 2, rowH, 1, Theme.accent, Draw.CORNER_LEFT)
+                Draw.roundedRect(context, rowX, y - 2, rowW, rowH, hoverRadii, Draw.withAlpha(Theme.bgHover, 200))
+                Draw.roundedRect(context, rowX, y - 2, 2, rowH, 1, Theme.accent, Draw.CORNER_LEFT)
             }
 
-            Draw.text(context, "[${item.key}]", blockX + 2, y, YELLOW, false)
-            Draw.text(context, item.label, labelX + 2, y, if (hovered) FG else Theme.textSecondary, false)
+            Draw.text(context, "[${item.key}]", blockX - 2, y, YELLOW, false)
+            Draw.text(context, item.label, labelX - 2, y, if (hovered) FG else Theme.textSecondary, false)
         }
 
         Draw.textCentered(context, "TTYClient · v${MainClient.VERSION}", cx, height - 12, 0, COMMENT, false)

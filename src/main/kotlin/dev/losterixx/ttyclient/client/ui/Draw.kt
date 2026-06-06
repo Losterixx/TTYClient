@@ -1,7 +1,10 @@
 package dev.losterixx.ttyclient.client.ui
 
+import dev.losterixx.ttyclient.client.screens.TTYClientTitleScreen.Companion.JETBRAINS_FONT
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 
 object Draw {
     const val CORNER_TOP_LEFT = RoundedRect.CORNER_TOP_LEFT
@@ -75,12 +78,14 @@ object Draw {
     }
 
     fun text(ctx: GuiGraphicsExtractor, text: String, x: Int, y: Int, color: Int, shadow: Boolean = false) {
-        ctx.text(mc.font, text, x, y, color, shadow)
+        val component = Component.literal(text).setStyle(Style.EMPTY.withFont(JETBRAINS_FONT))
+        ctx.text(mc.font, component, x, y, color, shadow)
     }
 
     fun textCentered(ctx: GuiGraphicsExtractor, text: String, x: Int, y: Int, w: Int, color: Int, shadow: Boolean = false) {
-        val tw = mc.font.width(text)
-        ctx.text(mc.font, text, x + (w - tw) / 2, y, color, shadow)
+        val component = Component.literal(text).setStyle(Style.EMPTY.withFont(JETBRAINS_FONT))
+        val tw = mc.font.width(component)
+        ctx.text(mc.font, component, x + (w - tw) / 2, y, color, shadow)
     }
 
     fun textWidth(text: String): Int = mc.font.width(text)

@@ -1,6 +1,7 @@
 package dev.losterixx.ttyclient.mixin.general;
 
 import dev.losterixx.ttyclient.client.MainClient;
+import dev.losterixx.ttyclient.client.ui.Draw;
 import dev.losterixx.ttyclient.client.ui.Theme;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -29,11 +30,11 @@ public class LoadingOverlayMixin {
 
     @Unique
     private static final String[] LOGO = {
-            " ______      _____      __  __ ",
-            "/\\__   _\\   /\\__  _\\   /\\ \\_\\ \\",
-            "  \\/_/\\ \\/   \\/_/\\ \\/   \\ \\____ \\",
-            "        \\ \\_\\       \\ \\_\\    \\/\\____\\",
-            "          \\/_/        \\/_/     \\/____/"
+            " ______     ______     __  __    ",
+            "/\\__  _\\   /\\__  _\\   /\\ \\_\\ \\   ",
+            "  \\/_/\\ \\/   \\/_/\\ \\/   \\ \\____ \\  ",
+            "   \\ \\_\\      \\ \\_\\    \\/\\_____\\ ",
+            "    \\/_/       \\/_/     \\/_____/ "
     };
 
     @Inject(method = "extractRenderState", at = @At("HEAD"), cancellable = true)
@@ -84,7 +85,7 @@ public class LoadingOverlayMixin {
             int logoAlphaInt = clampAlpha(logoAlpha);
             int cx = width / 2;
 
-            int fontH = minecraft.font.lineHeight;
+            int fontH = Draw.INSTANCE.getFontHeight() - 2;
             int lineH = fontH + 2;
             int totalH = LOGO.length * lineH;
             int logoY = height / 3 - totalH / 2;
@@ -93,13 +94,13 @@ public class LoadingOverlayMixin {
             int mutedColor  = withAlpha(Theme.INSTANCE.getTextMuted(), logoAlphaInt);
 
             for (int i = 0; i < LOGO.length; i++) {
-                int lw = minecraft.font.width(LOGO[i]);
-                graphics.text(minecraft.font, LOGO[i], (cx - lw / 2) - 10, logoY + i * lineH, accentColor, false);
+                int lw = Draw.INSTANCE.textWidth(LOGO[i]);
+                Draw.INSTANCE.text(graphics, LOGO[i], (cx - lw / 2) + 10, logoY + i * lineH, accentColor, false);
             }
 
             String ver = "v" + MainClient.INSTANCE.getVERSION();
-            int vw = minecraft.font.width(ver);
-            graphics.text(minecraft.font, ver, cx - vw / 2, logoY + totalH + 6, mutedColor, false);
+            int vw = Draw.INSTANCE.textWidth(ver);
+            Draw.INSTANCE.text(graphics, ver, cx - vw / 2, logoY + totalH + 6, mutedColor, false);
 
             currentProgress = clamp01(currentProgress * 0.95f + reload.getActualProgress() * 0.05f);
 
@@ -113,19 +114,20 @@ public class LoadingOverlayMixin {
                 int barX = cx - barW / 2;
                 int barY = (int) (height * 0.8325);
                 int barH = 4;
+                int barRadius = 2;
 
                 String pct = Math.round(currentProgress * 100) + "%";
-                int pw = minecraft.font.width(pct);
-                graphics.text(minecraft.font, pct, cx - pw / 2, barY - fontH - 6,
+                int pw = Draw.INSTANCE.textWidth(pct);
+                Draw.INSTANCE.text(graphics, pct, cx - pw / 2, barY - fontH - 6,
                         withAlpha(Theme.INSTANCE.getTextMuted(), barAlpha), false);
 
-                graphics.fill(barX, barY, barX + barW, barY + barH,
-                        withAlpha(Theme.INSTANCE.getBgSecondary(), barAlpha));
+                Draw.INSTANCE.roundedRect(graphics, barX, barY, barW, barH, barRadius,
+                        withAlpha(Theme.INSTANCE.getBgSecondary(), barAlpha), Draw.CORNER_ALL);
 
                 int filledW = Math.round(currentProgress * barW);
                 if (filledW > 0) {
-                    graphics.fill(barX, barY, barX + filledW, barY + barH,
-                            withAlpha(Theme.INSTANCE.getAccent(), barAlpha));
+                    Draw.INSTANCE.roundedRect(graphics, barX, barY, filledW, barH, barRadius,
+                            withAlpha(Theme.INSTANCE.getAccent(), barAlpha), Draw.CORNER_ALL);
                 }
             }
 
