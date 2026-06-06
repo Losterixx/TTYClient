@@ -1,7 +1,10 @@
 package dev.losterixx.ttyclient.client.hud
 
+import dev.losterixx.ttyclient.client.ui.Draw
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
+
+enum class BackgroundStyle { RECT, PIXEL, ROUNDED }
 
 abstract class HudElement {
 
@@ -25,11 +28,12 @@ abstract class HudElement {
         scaledScreenH: Int,
         drawBackground: Boolean,
         backgroundColor: Int,
-        roundedCorners: Boolean,
+        style: BackgroundStyle = BackgroundStyle.PIXEL,
+        radius: Int = 4,
     ) {
         val text = resolveText()
         val (x, y) = computePosition(anchor, offsetX, offsetY, scaledScreenW, scaledScreenH, text)
-        drawAt(context, text, x, y, drawBackground, backgroundColor, roundedCorners)
+        drawAt(context, text, x, y, drawBackground, backgroundColor, style, radius)
     }
 
     fun drawAt(
@@ -39,25 +43,36 @@ abstract class HudElement {
         y: Int,
         drawBackground: Boolean,
         backgroundColor: Int,
-        roundedCorners: Boolean = true,
+        style: BackgroundStyle = BackgroundStyle.PIXEL,
+        radius: Int = 4,
     ) {
         val font = Minecraft.getInstance().font
         val textWidth = font.width(text)
 
         if (drawBackground) {
-            val left = x - bgPadX
-            val top = y - bgPadY
-            val right = x + textWidth + bgPadX
+            val left   = x - bgPadX
+            val top    = y - bgPadY
+            val right  = x + textWidth + bgPadX
             val bottom = y + textHeight + bgPadY - 1
+            val w = right - left
+            val h = bottom - top
 
-            if (roundedCorners) {
-                context.fill(left + 1, top + 1, right - 1, bottom - 1, backgroundColor)
-                context.fill(left + 1, top, right - 1, top + 1, backgroundColor)
-                context.fill(left + 1, bottom - 1, right - 1, bottom, backgroundColor)
-                context.fill(left, top + 1, left + 1, bottom - 1, backgroundColor)
-                context.fill(right - 1, top + 1, right, bottom - 1, backgroundColor)
-            } else {
-                context.fill(left, top, right, bottom, backgroundColor)
+            when (style) {
+                BackgroundStyle.RECT -> {
+                    context.fill(left, top, right, bottom, backgroundColor)
+                }
+
+                BackgroundStyle.PIXEL -> {
+                    context.fill(left + 1, top + 1, right - 1, bottom - 1, backgroundColor)
+                    context.fill(left + 1, top, right - 1, top + 1, backgroundColor)
+                    context.fill(left + 1, bottom - 1, right - 1, bottom, backgroundColor)
+                    context.fill(left, top + 1, left + 1, bottom - 1, backgroundColor)
+                    context.fill(right - 1, top + 1, right, bottom - 1, backgroundColor)
+                }
+
+                BackgroundStyle.ROUNDED -> {
+                    Draw.roundedRect(context, left, top, w, h, radius, backgroundColor)
+                }
             }
         }
 
@@ -130,6 +145,3 @@ abstract class HudElement {
         return Triple(bestAnchor, newOffsetX, newOffsetY)
     }
 }
-
-
-

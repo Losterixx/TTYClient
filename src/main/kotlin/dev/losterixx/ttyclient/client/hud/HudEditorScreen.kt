@@ -71,36 +71,48 @@ class HudEditorScreen : Screen(Component.literal("HUD Editor")) {
         val right = x + textW + paddingX
         val bottom = y + textH + paddingY - 1
 
-        element.drawAt(context, text, x, y, generalConfig.backgroundEnabled, 0x80000000.toInt(), generalConfig.roundedCorners)
+        val style = BackgroundStyle.entries.find { it.name == generalConfig.backgroundStyle }
+            ?: BackgroundStyle.PIXEL
+        val radius = generalConfig.backgroundRadius
+
+        element.drawAt(context, text, x, y, generalConfig.backgroundEnabled, 0x80000000.toInt(), style, radius)
 
         if (isDragging || isHovered) {
             val overlayColor = when {
                 isDragging -> Draw.withAlpha(Theme.accent, 40)
-                isHovered -> Draw.withAlpha(Theme.accent, 15)
+                isHovered  -> Draw.withAlpha(Theme.accent, 15)
                 else -> 0
             }
 
             if (overlayColor != 0) {
-                if (generalConfig.roundedCorners) {
-                    context.fill(left + 1, top + 1, right - 1, bottom - 1, overlayColor)
-                    context.fill(left + 1, top, right - 1, top + 1, overlayColor)
-                    context.fill(left + 1, bottom - 1, right - 1, bottom, overlayColor)
-                    context.fill(left, top + 1, left + 1, bottom - 1, overlayColor)
-                    context.fill(right - 1, top + 1, right, bottom - 1, overlayColor)
-                } else {
-                    context.fill(left, top, right, bottom, overlayColor)
+                when (style) {
+                    BackgroundStyle.ROUNDED -> Draw.roundedRect(context, left, top, right - left, bottom - top, radius, overlayColor)
+
+                    BackgroundStyle.PIXEL -> {
+                        context.fill(left + 1, top + 1, right - 1, bottom - 1, overlayColor)
+                        context.fill(left + 1, top, right - 1, top + 1, overlayColor)
+                        context.fill(left + 1, bottom - 1, right - 1, bottom, overlayColor)
+                        context.fill(left, top + 1, left + 1, bottom - 1, overlayColor)
+                        context.fill(right - 1, top + 1, right, bottom - 1, overlayColor)
+                    }
+
+                    BackgroundStyle.RECT -> context.fill(left, top, right, bottom, overlayColor)
                 }
             }
 
             val borderColor = if (isDragging) Theme.accent else Draw.withAlpha(0xFFFFFF, 120)
 
-            if (generalConfig.roundedCorners) {
-                context.fill(left + 1, top, right - 1, top + 1, borderColor)
-                context.fill(left + 1, bottom - 1, right - 1, bottom, borderColor)
-                context.fill(left, top + 1, left + 1, bottom - 1, borderColor)
-                context.fill(right - 1, top + 1, right, bottom - 1, borderColor)
-            } else {
-                Draw.rectOutline(context, left, top, right - left, bottom - top, borderColor)
+            when (style) {
+                BackgroundStyle.ROUNDED -> Draw.roundedRectOutline(context, left, top, right - left, bottom - top, radius, borderColor)
+
+                BackgroundStyle.PIXEL -> {
+                    context.fill(left + 1, top, right - 1, top + 1, borderColor)
+                    context.fill(left + 1, bottom - 1, right - 1, bottom, borderColor)
+                    context.fill(left, top + 1, left + 1, bottom - 1, borderColor)
+                    context.fill(right - 1, top + 1, right, bottom - 1, borderColor)
+                }
+
+                BackgroundStyle.RECT -> Draw.rectOutline(context, left, top, right - left, bottom - top, borderColor)
             }
         }
     }

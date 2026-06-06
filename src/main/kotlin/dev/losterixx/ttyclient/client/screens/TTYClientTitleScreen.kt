@@ -1,11 +1,16 @@
 package dev.losterixx.ttyclient.client.screens
 
+import com.mojang.realmsclient.RealmsMainScreen
 import dev.losterixx.ttyclient.client.MainClient
+import dev.losterixx.ttyclient.client.config.ConfigManager
+import dev.losterixx.ttyclient.client.config.configs.TitleScreenConfig
 import dev.losterixx.ttyclient.client.ui.Draw
+import dev.losterixx.ttyclient.client.ui.RoundedRect
 import dev.losterixx.ttyclient.client.ui.Theme
 import net.minecraft.client.gui.GuiGraphicsExtractor
 import net.minecraft.client.gui.screens.Screen
 import net.minecraft.client.gui.screens.multiplayer.JoinMultiplayerScreen
+import net.minecraft.client.gui.screens.options.AccessibilityOptionsScreen
 import net.minecraft.client.gui.screens.options.OptionsScreen
 import net.minecraft.client.gui.screens.worldselection.SelectWorldScreen
 import net.minecraft.client.input.CharacterEvent
@@ -27,33 +32,59 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
             "         \\ \\_\\       \\ \\_\\    \\/\\____\\",
             "           \\/_/        \\/_/     \\/____/"
         )
-        /*private val LOGO = listOf(
-            "████████╗████████╗██╗   ██╗",
-            "   ██╔══╝╚══██╔══╝╚██╗ ██╔╝",
-            "   ██║      ██║    ╚████╔╝ ",
-            "   ██║      ██║     ╚██╔╝  ",
-            "   ██║      ██║      ██║   ",
-            "   ╚═╝      ╚═╝      ╚═╝   "
-        )*/
+
+        private const val CONFIG_PATH = "config/titlescreen.jsonc"
+
+        fun loadConfig(): TitleScreenConfig = ConfigManager.loadConfig(CONFIG_PATH, TitleScreenConfig::class.java) { TitleScreenConfig() }
+        fun saveConfig(cfg: TitleScreenConfig) = ConfigManager.saveConfig(CONFIG_PATH, cfg)
     }
 
-    private data class MenuItem(
-        val label: String,
-        val key: String,
-        val action: TTYClientTitleScreen.() -> Unit
+    private val actionMap: Map<String, TTYClientTitleScreen.() -> Unit> = mapOf(
+        "singleplayer" to { minecraft?.setScreen(SelectWorldScreen(this)) },
+        "multiplayer" to { minecraft?.setScreen(JoinMultiplayerScreen(this)) },
+        "realms" to { minecraft?.setScreen(RealmsMainScreen(this)) },
+        "config" to { minecraft?.setScreen(ConfigEditorScreen()) },
+        "options" to { minecraft?.setScreen(OptionsScreen(this, minecraft!!.options, false)) },
+        "accessibility" to { minecraft?.setScreen(AccessibilityOptionsScreen(this, minecraft!!.options)) },
+        "quit" to { minecraft?.stop() },
     )
 
-    private val items: List<MenuItem> by lazy {
-        listOf(
-            MenuItem("Singleplayer", "s") { minecraft?.setScreen(SelectWorldScreen(this)) },
-            MenuItem("Multiplayer", "m") { minecraft?.setScreen(JoinMultiplayerScreen(this)) },
-            MenuItem("Config Manager", "c") { minecraft?.setScreen(ConfigEditorScreen()) },
-            MenuItem("Options", "o") { minecraft?.setScreen(OptionsScreen(this, minecraft!!.options, false)) },
-            MenuItem("Quit", "q") { minecraft?.stop() }
-        )
-    }
+    private val labelMap: Map<String, String> = mapOf(
+        "singleplayer" to "Singleplayer",
+        "multiplayer" to "Multiplayer",
+        "realms" to "Realms",
+        "config" to "Config Editor",
+        "options" to "Options",
+        "accessibility" to "Accessibility",
+        "quit" to "Quit",
+    )
+
+    private data class MenuItem(
+        val id: String,
+        val label: String,
+        val key: String,
+        val action: TTYClientTitleScreen.() -> Unit,
+    )
+
+    private var cfg: TitleScreenConfig = loadConfig()
+
+    private val items: List<MenuItem> get() = cfg.items
+        .filter { it.enabled && it.hotkey.isNotEmpty() && actionMap.containsKey(it.id) }
+        .map { itemCfg ->
+            MenuItem(
+                id = itemCfg.id,
+                label = labelMap[itemCfg.id] ?: itemCfg.id,
+                key = itemCfg.hotkey.take(1).lowercase(),
+                action = actionMap[itemCfg.id]!!,
+            )
+        }
 
     private var hoveredIndex = -1
+
+    override fun init() {
+        super.init()
+        cfg = loadConfig()
+    }
 
     override fun onClose() { }
 
@@ -71,32 +102,48 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
         val versionY = logoTop + LOGO.size * lh + 6
         Draw.textCentered(context, "v${MainClient.VERSION}", cx, versionY, 0, COMMENT, false)
 
-        val sepY = versionY + lh + 12
-        Draw.rect(context, cx - 45, sepY, 90, 1, Draw.withAlpha(COMMENT, 120))
-
+        val activeItems = items
         val keyColW = Draw.textWidth("[m]") + 2
-        val blockW = 110
+        val blockW = 140
         val blockX = cx - blockW / 2
-        val labelX = blockX + keyColW + 5
-        val menuTop = sepY + lh + 6
-        val itemH = lh + 6
+        val labelX = blockX + keyColW + 6
+        val menuTop = versionY + lh + 28
+        val itemH = lh + 8
+        val hPad = 12
+        val vPad = 6
+        val cardR = 6
+
+        val cardX = blockX - hPad
+        val cardY = menuTop - vPad
+        val cardW = blockW + hPad * 2
+        val cardH = activeItems.size * itemH + vPad * 2 - 12
+
+        if (cfg.showCardBackground && activeItems.isNotEmpty()) {
+            val cardRadii = RoundedRect.Radii(topLeft = 2, topRight = cardR, bottomLeft = 2, bottomRight = cardR)
+            Draw.roundedRect(context, cardX, cardY, cardW, cardH, cardRadii, Draw.withAlpha(Theme.bgSecondary, 180))
+        }
 
         hoveredIndex = -1
-        items.forEachIndexed { i, item ->
+
+        val mouseInMenuArea = mouseX >= cardX && mouseX < cardX + cardW && mouseY >= cardY && mouseY < cardY + cardH
+
+        activeItems.forEachIndexed { i, item ->
             val y = menuTop + i * itemH
-            val hovered = Draw.isInside(mouseX, mouseY, blockX - 4, y - 4, blockW + 8, lh + 4)
+            val rowX = blockX - hPad + 2
+            val rowW = blockW + hPad * 2 - 4
+            val rowH = lh + 4
+
+            val hoverRadii = RoundedRect.Radii(topLeft = 1, topRight = 4, bottomLeft = 1, bottomRight = 4)
+            val hovered = mouseInMenuArea && Draw.isInsideRounded(mouseX, mouseY, rowX, y - 4, rowW, rowH, hoverRadii)
 
             if (hovered) {
                 hoveredIndex = i
-                Draw.rect(context, blockX - 4, y - 4, blockW + 8, lh + 4, Draw.withAlpha(Theme.bgHover, 180))
-                Draw.rect(context, blockX - 4, y - 4, 2, lh + 4, Theme.accent)
+                Draw.roundedRect(context, rowX, y - 4, rowW, rowH, hoverRadii, Draw.withAlpha(Theme.bgHover, 200))
+                Draw.roundedRect(context, rowX, y - 4, 2, rowH, 1, Theme.accent, Draw.CORNER_LEFT)
             }
 
-            val keyStr = "[${item.key}]"
-            Draw.text(context, keyStr, blockX + 2, y, YELLOW, false)
-
-            val labelColor = if (hovered) FG else Theme.textSecondary
-            Draw.text(context, item.label, labelX + 2, y, labelColor, false)
+            Draw.text(context, "[${item.key}]", blockX + 2, y, YELLOW, false)
+            Draw.text(context, item.label, labelX + 2, y, if (hovered) FG else Theme.textSecondary, false)
         }
 
         Draw.textCentered(context, "TTYClient · v${MainClient.VERSION}", cx, height - 12, 0, COMMENT, false)
@@ -124,8 +171,7 @@ class TTYClientTitleScreen : Screen(Component.literal("TTYClient")) {
 
     override fun charTyped(input: CharacterEvent): Boolean {
         val ch = input.codepoint().toChar().lowercaseChar()
-        if (items.any { it.key[0].lowercaseChar() == ch }) return true
-
+        if (items.any { it.key[0] == ch }) return true
         return super.charTyped(input)
     }
 }

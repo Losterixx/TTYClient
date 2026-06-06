@@ -22,6 +22,7 @@ import java.io.File
  */
 class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
+
     private companion object {
         val ROOT: File = File(System.getProperty("user.home"), "TTYClient")
         val STATE_FILE = File(ROOT, ".editor-state.json")

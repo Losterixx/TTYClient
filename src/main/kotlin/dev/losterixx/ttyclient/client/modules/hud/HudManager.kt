@@ -8,6 +8,7 @@ import dev.losterixx.ttyclient.client.config.configs.hud.GeneralHudConfig
 import dev.losterixx.ttyclient.client.config.configs.hud.LocationHudConfig
 import dev.losterixx.ttyclient.client.config.configs.hud.PingHudConfig
 import dev.losterixx.ttyclient.client.config.configs.hud.TimeHudConfig
+import dev.losterixx.ttyclient.client.hud.BackgroundStyle
 import dev.losterixx.ttyclient.client.hud.HudEditorScreen
 import dev.losterixx.ttyclient.client.hud.HudElement
 import dev.losterixx.ttyclient.client.hud.elements.*
@@ -166,6 +167,10 @@ object HudManager : ClientModule {
         val sw = (context.guiWidth() / scale).toInt()
         val sh = (context.guiHeight() / scale).toInt()
 
+        val style = BackgroundStyle.entries.find { it.name == generalConfig.backgroundStyle }
+            ?: BackgroundStyle.PIXEL
+        val radius = generalConfig.backgroundRadius
+
         context.pose().pushMatrix()
         context.pose().scale(scale, scale)
 
@@ -177,7 +182,8 @@ object HudManager : ClientModule {
                     sh,
                     generalConfig.backgroundEnabled,
                     0x80000000.toInt(),
-                    generalConfig.roundedCorners
+                    style,
+                    radius,
                 )
             }
         }
