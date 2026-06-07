@@ -1,3 +1,18 @@
+# ⚠️ REPOSITORY MOVED ⚠️
+
+**This repository has been migrated to Codeberg:**
+
+### 🔗 [https://codeberg.org/Losterixx/TTYClient](https://codeberg.org/Losterixx/TTYClient)
+
+This GitHub repository is **archived** and no longer maintained. Please visit the Codeberg repository for:
+- Latest releases and updates
+- Issue reporting and feature requests
+- Contributing and pull requests
+- Wiki and documentation
+- ...
+
+---
+
 # TTYClient
 
 **A terminal-themed Minecraft client for those who live in the shell.**
