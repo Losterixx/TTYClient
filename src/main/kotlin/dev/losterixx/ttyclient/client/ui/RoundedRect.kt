@@ -182,25 +182,58 @@ object RoundedRect {
     private fun drawCorner(ctx: GuiGraphicsExtractor, cx: Int, cy: Int, sr: Int, baseAlpha: Int, rgb: Int, pos: CornerPosition) {
         val cornerAlpha = getOrComputeCorner(sr)
 
-        for (i in 0 until sr) {
-            for (j in 0 until sr) {
+        for (j in 0 until sr) {
+            val py = when (pos) {
+                CornerPosition.TOP_LEFT, CornerPosition.TOP_RIGHT -> cy + j
+                CornerPosition.BOTTOM_LEFT, CornerPosition.BOTTOM_RIGHT -> cy - 1 - j
+            }
+
+            var batchStart = -1
+            var batchColor = 0
+
+            for (i in 0 until sr) {
                 val t = cornerAlpha[i][j]
-                if (t <= 0f) continue
 
-                val a = (t * baseAlpha + 0.5).toInt()
-                val c = (a shl 24) or rgb
+                if (t < 0.25f) {
+                    if (batchStart >= 0) {
+                        val px = when (pos) {
+                            CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + batchStart
+                            CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - i
+                        }
 
+                        ctx.fill(px, py, px + (i - batchStart), py + 1, batchColor)
+                        batchStart = -1
+                    }
+
+                    continue
+                }
+
+                val rawAlpha = (t * baseAlpha + 0.5).toInt()
+                val quantizedAlpha = ((rawAlpha + 32) / 64) * 64
+                val c = (quantizedAlpha.coerceIn(0, 255) shl 24) or rgb
+
+                if (batchStart < 0) {
+                    batchStart = i
+                    batchColor = c
+                } else if (c != batchColor) {
+                    val px = when (pos) {
+                        CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + batchStart
+                        CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - i
+                    }
+
+                    ctx.fill(px, py, px + (i - batchStart), py + 1, batchColor)
+                    batchStart = i
+                    batchColor = c
+                }
+            }
+
+            if (batchStart >= 0) {
                 val px = when (pos) {
-                    CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + i
-                    CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - 1 - i
+                    CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + batchStart
+                    CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - sr
                 }
 
-                val py = when (pos) {
-                    CornerPosition.TOP_LEFT, CornerPosition.TOP_RIGHT -> cy + j
-                    CornerPosition.BOTTOM_LEFT, CornerPosition.BOTTOM_RIGHT -> cy - 1 - j
-                }
-
-                ctx.fill(px, py, px + 1, py + 1, c)
+                ctx.fill(px, py, px + (sr - batchStart), py + 1, batchColor)
             }
         }
     }
@@ -208,28 +241,62 @@ object RoundedRect {
     private fun drawCornerOutline(ctx: GuiGraphicsExtractor, cx: Int, cy: Int, sr: Int, st: Int, baseAlpha: Int, rgb: Int, pos: CornerPosition) {
         val cornerAlpha = getOrComputeCornerOutline(sr, sr - st)
 
-        for (i in 0 until sr) {
-            for (j in 0 until sr) {
+        for (j in 0 until sr) {
+            val py = when (pos) {
+                CornerPosition.TOP_LEFT, CornerPosition.TOP_RIGHT -> cy + j
+                CornerPosition.BOTTOM_LEFT, CornerPosition.BOTTOM_RIGHT -> cy - 1 - j
+            }
+
+            var batchStartX = -1
+            var batchColor = 0
+
+            for (i in 0 until sr) {
                 val alphaMul = cornerAlpha[i][j]
-                if (alphaMul <= 0f) continue
 
-                val a = (alphaMul * baseAlpha + 0.5).toInt()
-                val c = (a shl 24) or rgb
+                if (alphaMul < 0.25f) {
+                    if (batchStartX >= 0) {
+                        val px = when (pos) {
+                            CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + batchStartX
+                            CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - i
+                        }
 
+                        ctx.fill(px, py, px + (i - batchStartX), py + 1, batchColor)
+                        batchStartX = -1
+                    }
+
+                    continue
+                }
+
+                val rawAlpha = (alphaMul * baseAlpha + 0.5).toInt()
+                val quantizedAlpha = ((rawAlpha + 32) / 64) * 64
+                val c = (quantizedAlpha.coerceIn(0, 255) shl 24) or rgb
+
+                if (batchStartX < 0) {
+                    batchStartX = i
+                    batchColor = c
+                } else if (c != batchColor) {
+                    val px = when (pos) {
+                        CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + batchStartX
+                        CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - i
+                    }
+
+                    ctx.fill(px, py, px + (i - batchStartX), py + 1, batchColor)
+                    batchStartX = i
+                    batchColor = c
+                }
+            }
+
+            if (batchStartX >= 0) {
                 val px = when (pos) {
-                    CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + i
-                    CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - 1 - i
+                    CornerPosition.TOP_LEFT, CornerPosition.BOTTOM_LEFT -> cx + batchStartX
+                    CornerPosition.TOP_RIGHT, CornerPosition.BOTTOM_RIGHT -> cx - sr
                 }
 
-                val py = when (pos) {
-                    CornerPosition.TOP_LEFT, CornerPosition.TOP_RIGHT -> cy + j
-                    CornerPosition.BOTTOM_LEFT, CornerPosition.BOTTOM_RIGHT -> cy - 1 - j
-                }
-
-                ctx.fill(px, py, px + 1, py + 1, c)
+                ctx.fill(px, py, px + (sr - batchStartX), py + 1, batchColor)
             }
         }
     }
+
 
     fun isInside(mx: Int, my: Int, x: Int, y: Int, w: Int, h: Int, radii: Radii): Boolean {
         if (mx < x || mx >= x + w || my < y || my >= y + h) return false

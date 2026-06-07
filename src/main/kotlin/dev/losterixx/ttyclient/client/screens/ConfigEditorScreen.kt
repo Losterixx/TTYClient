@@ -524,6 +524,18 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
         if (pos < raw.length) ctx.textWithFont(tr, colorizedText(raw.substring(pos)), x, textY, Theme.editorTheme.subtext, false)
     }
 
+    private fun visualXToCol(tr: Font, raw: String, mx: Int, startX: Int): Int {
+        if (raw.isEmpty()) return 0
+
+        for (i in raw.indices) {
+            val xLeft = colToVisualX(tr, raw, i, startX)
+            val xRight = colToVisualX(tr, raw, i + 1, startX)
+            if (mx < xLeft + (xRight - xLeft) / 2) return i
+        }
+
+        return raw.length
+    }
+
     private fun colToVisualX(tr: Font, raw: String, col: Int, startX: Int): Int {
         val ss = tr.lineHeight - 2
         val matches = HEX_REGEX.findAll(raw).toList()
@@ -1188,9 +1200,9 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
             val clickedLine = (edScroll + (my - HDR_H) / lh).coerceIn(0, lines.size - 1)
             curLine = clickedLine
-            val raw = lines[curLine]; var col = 0; var x = codeX
-            for (ch in raw) { val cw = font.widthWithFont(ch.toString()); if (x + cw / 2 > mx) break; x += cw; col++ }
-            curCol = col.coerceAtMost(raw.length)
+            val raw = lines[curLine]
+
+            curCol = visualXToCol(font, raw, mx, codeX).coerceAtMost(raw.length)
 
             if (doubled) {
                 val ln = lines[curLine]; var ws = curCol; var we = curCol
@@ -1247,9 +1259,8 @@ class ConfigEditorScreen : Screen(Component.literal("Config Editor")) {
 
             val clickedLine = (edScroll + (my - HDR_H) / lh).coerceIn(0, lines.size - 1)
             curLine = clickedLine
-            val raw = lines[curLine]; var col = 0; var x = codeX
-            for (ch in raw) { val cw = font.widthWithFont(ch.toString()); if (x + cw / 2 > mx) break; x += cw; col++ }
-            curCol = col.coerceAtMost(raw.length)
+            val raw = lines[curLine]
+            curCol = visualXToCol(font, raw, mx, codeX).coerceAtMost(raw.length)
 
             clamp()
             scroll()

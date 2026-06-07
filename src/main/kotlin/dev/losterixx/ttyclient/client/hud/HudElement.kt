@@ -1,8 +1,11 @@
 package dev.losterixx.ttyclient.client.hud
 
+import dev.losterixx.ttyclient.client.screens.TTYClientTitleScreen.Companion.JETBRAINS_FONT
 import dev.losterixx.ttyclient.client.ui.Draw
 import net.minecraft.client.Minecraft
 import net.minecraft.client.gui.GuiGraphicsExtractor
+import net.minecraft.network.chat.Component
+import net.minecraft.network.chat.Style
 
 enum class BackgroundStyle { RECT, PIXEL, ROUNDED }
 
